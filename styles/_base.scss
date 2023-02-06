@@ -28,6 +28,15 @@ h1.main-title {
     text-align: center;
 }
 
+.fade-in {
+    animation: fadeIn 2s ease;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; margin-top: -20px;}
+    100% { opacity: 1; margin-top: auto; }
+  }
+
 
 @keyframes gradient {
 	0% {

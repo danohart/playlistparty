@@ -5,7 +5,12 @@ import Form from "react-bootstrap/Form";
 export default function AllPlaylists(props) {
   const { data, error, isLoading } = useSWR("/api/all-playlists", fetcher);
   if (error) return <div>failed to load</div>;
-  if (isLoading) return <div>loading...</div>;
+  if (isLoading)
+    return (
+      <Form.Select onChange={props.playlistSelect} aria-label='Default select'>
+        <option>Loading Playlists</option>
+      </Form.Select>
+    );
 
   return (
     <Form.Select onChange={props.playlistSelect} aria-label='Default select'>
