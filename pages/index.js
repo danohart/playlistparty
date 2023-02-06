@@ -3,6 +3,7 @@ import Head from "next/head";
 import { Row, Col, Button, FormControl } from "react-bootstrap";
 import AllPlaylists from "@/compontents/AllPlaylists";
 import Meta from "@/compontents/Meta";
+import { siteTitle } from "@/lib/constants";
 
 export default function Home() {
   const [playlistId, setPlaylistId] = useState("Select Playlist");
@@ -37,7 +38,7 @@ export default function Home() {
   return (
     <>
       <Meta />
-      <h1>Spotify</h1>
+      <h1>{siteTitle}</h1>
       <Row>
         <Col xs={12} sm={12} md={6} lg={6}>
           <h2>Pick a playlist</h2>

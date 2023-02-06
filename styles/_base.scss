@@ -28,6 +28,28 @@ h1 {
     text-align: center;
 }
 
+.track {
+    margin: 10px;
+    
+    &-image {
+        img {
+            width: 100%;
+            height: auto;
+        }
+    }
+
+    &-title {
+        font-size: 2em;
+        line-height: 1em;
+        text-align: center;
+    }
+
+    &-artist {
+        text-align: center;
+        font-weight: 200;
+    }
+}
+
 .button-group {
     .col {
        justify-content: center;
