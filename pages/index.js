@@ -34,7 +34,7 @@ export default function Home() {
         <h1>Spotify</h1>
         <Row>
           <Col>
-            <h2>Daniel's Top Artists</h2>
+            <h2>Daniel&apos;s Top Artists</h2>
             {data.map((artist) => (
               <div key={artist.name}>{artist.name}</div>
             ))}
