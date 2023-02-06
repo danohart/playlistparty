@@ -1,6 +1,6 @@
 import Meta from "@/compontents/Meta";
 import { Row, Col, Button } from "react-bootstrap";
-import Track from "../compontents/Track";
+import CurrentlyPlaying from "../compontents/CurrentlyPlaying";
 
 export default function Welcome() {
   return (
@@ -16,7 +16,7 @@ export default function Welcome() {
             <Button variant='outline-info'>Learn More</Button>
           </Col>
         </Row>
-        <Track />
+        <CurrentlyPlaying />
       </Col>
     </Row>
   );

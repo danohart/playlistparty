@@ -30,11 +30,16 @@ h1 {
 
 .track {
     margin: 10px;
-    
+
     &-image {
         img {
             width: 100%;
             height: auto;
+        }
+
+        &.loading {
+            height: 197px;
+            background-color: $sunset-orange;
         }
     }
 
@@ -42,11 +47,18 @@ h1 {
         font-size: 2em;
         line-height: 1em;
         text-align: center;
+        margin-top: 4px;
+
+        &.loading {
+            min-height: 10px;
+            background-color: $sunset-orange;
+        }
     }
 
     &-artist {
         text-align: center;
         font-weight: 200;
+        margin-top: 4px;
     }
 }
 
