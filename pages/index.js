@@ -13,13 +13,24 @@ export default function Home() {
   if (isLoading) return <div>loading...</div>;
 
   function addToPlaylist(songs) {
+    const songId = songs.split("/", 10)[4].split("?", 1);
+
+    const songUri = "spotify:track:" + songId;
+
     fetch("/api/add-to-playlist", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify([songs]),
+      body: JSON.stringify([songUri]),
     });
+  }
+
+  function handleChange(e) {
+    e.preventDefault;
+    const formData = e.target.value;
+
+    setSongsToAdd(formData);
   }
 
   return (
@@ -45,17 +56,19 @@ export default function Home() {
                 Add
               </Col>
               <Col xs={12} sm={12} md={12} lg={12}>
-                <FormControl placeholder='Enter song id' />
+                <FormControl
+                  placeholder='Enter song id'
+                  value={songsToAdd}
+                  onChange={handleChange}
+                />
               </Col>
             </Row>
             <Row className='mt-2'>
               <Col>
                 {" "}
                 <Button
-                  disabled
-                  onClick={() =>
-                    addToPlaylist("spotify:track:7zqyhEbjAajHuvH2Icn1Hr")
-                  }
+                  disabled={process.env.NODE_ENV !== "development"}
+                  onClick={() => addToPlaylist(songsToAdd)}
                 >
                   Add to playlist
                 </Button>
