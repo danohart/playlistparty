@@ -1,14 +1,27 @@
+import React, { useState } from "react";
 import Head from "next/head";
 import useSWR from "swr";
 import Image from "next/image";
 import fetcher from "../lib/fetcher";
+import { Row, Col, Button, FormControl } from "react-bootstrap";
 
 export default function Home() {
-  const { data, error, isLoading } = useSWR("/api/now-playing", fetcher);
+  const { data, error, isLoading } = useSWR("/api/stats/artists", fetcher);
+  const [songsToAdd, setSongsToAdd] = useState("");
 
   if (error) return <div>failed to load</div>;
   if (isLoading) return <div>loading...</div>;
-  console.log(data);
+
+  function addToPlaylist(songs) {
+    fetch("/api/add-to-playlist", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([songs]),
+    });
+  }
+
   return (
     <>
       <Head>
@@ -19,11 +32,37 @@ export default function Home() {
       </Head>
       <main>
         <h1>Spotify</h1>
-        Daniel {data.isPlaying ? "is listening to..." : "was listening to..."}
-        <div>Artist: {data.artist}</div>
-        <div>Song: {data.title}</div>
-        <div>Album: {data.album}</div>
-        <img src={data.albumImageUrl} width='100' height='100' />
+        <Row>
+          <Col>
+            <h2>Daniel's Top Artists</h2>
+            {data.map((artist) => (
+              <div key={artist.name}>{artist.name}</div>
+            ))}
+          </Col>
+          <Col>
+            <Row>
+              <Col xs={12} sm={12} md={12} lg={12}>
+                Add
+              </Col>
+              <Col xs={12} sm={12} md={12} lg={12}>
+                <FormControl placeholder='Enter song id' />
+              </Col>
+            </Row>
+            <Row className='mt-2'>
+              <Col>
+                {" "}
+                <Button
+                  disabled
+                  onClick={() =>
+                    addToPlaylist("spotify:track:7zqyhEbjAajHuvH2Icn1Hr")
+                  }
+                >
+                  Add to playlist
+                </Button>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
       </main>
     </>
   );

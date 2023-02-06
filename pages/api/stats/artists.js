@@ -1,7 +1,7 @@
-import { topArtists } from "../../../lib/spotify";
+import { topTracksOrArtists } from "../../../lib/spotify";
 
 export default async function handler(req, res) {
-  const response = await topArtists();
+  const response = await topTracksOrArtists("artists");
   const { items } = await response.json();
 
   const artists = items.slice(0, 5).map((artist) => ({
