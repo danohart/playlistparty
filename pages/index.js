@@ -4,6 +4,7 @@ import { Row, Col, Button, FormControl } from "react-bootstrap";
 import AllPlaylists from "@/compontents/AllPlaylists";
 
 export default function Home() {
+  const [playlistId, setPlaylistId] = useState("");
   const [songsToAdd, setSongsToAdd] = useState("");
 
   function addToPlaylist(songs) {
@@ -16,7 +17,7 @@ export default function Home() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify([songUri]),
+      body: JSON.stringify({ uris: [songUri], playlistId }),
     });
   }
 
@@ -26,6 +27,13 @@ export default function Home() {
 
     setSongsToAdd(formData);
   }
+
+  function playlistSelect(e) {
+    const selection = e.target.value;
+    setPlaylistId(selection);
+  }
+
+  console.log("selection", playlistId);
 
   return (
     <>
@@ -43,7 +51,7 @@ export default function Home() {
         <Row>
           <Col xs={12} sm={12} md={6} lg={6}>
             <h2>Pick a playlist</h2>
-            <AllPlaylists />
+            <AllPlaylists playlistSelect={playlistSelect} />
           </Col>
           <Col xs={12} sm={12} md={6} lg={6}>
             <Row>
@@ -61,7 +69,10 @@ export default function Home() {
             <Row className='mt-2'>
               <Col>
                 <Button
-                  disabled={process.env.NODE_ENV !== "development"}
+                  disabled={
+                    process.env.NODE_ENV !== "development" ||
+                    playlistId === "Select Playlist"
+                  }
                   onClick={() => addToPlaylist(songsToAdd)}
                   size='lg'
                 >

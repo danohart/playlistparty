@@ -2,13 +2,13 @@ import useSWR from "swr";
 import fetcher from "../lib/fetcher";
 import Form from "react-bootstrap/Form";
 
-export default function AllPlaylists() {
+export default function AllPlaylists(props) {
   const { data, error, isLoading } = useSWR("/api/all-playlists", fetcher);
   if (error) return <div>failed to load</div>;
   if (isLoading) return <div>loading...</div>;
 
   return (
-    <Form.Select aria-label='Default select'>
+    <Form.Select onChange={props.playlistSelect} aria-label='Default select'>
       <option>Select Playlist</option>
       {data.map((playlist) => (
         <option
