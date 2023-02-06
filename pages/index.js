@@ -6,7 +6,7 @@ import fetcher from "../lib/fetcher";
 import { Row, Col, Button, FormControl } from "react-bootstrap";
 
 export default function Home() {
-  const { data, error, isLoading } = useSWR("/api/stats/artists", fetcher);
+  const [playlistId, setPlaylistId] = useState("Select Playlist");
   const [songsToAdd, setSongsToAdd] = useState("");
 
   if (error) return <div>failed to load</div>;
@@ -31,6 +31,11 @@ export default function Home() {
     const formData = e.target.value;
 
     setSongsToAdd(formData);
+  }
+
+  function playlistSelect(e) {
+    const selection = e.target.value;
+    setPlaylistId(selection);
   }
 
   return (
@@ -67,7 +72,11 @@ export default function Home() {
               <Col>
                 {" "}
                 <Button
-                  disabled={process.env.NODE_ENV !== "development"}
+                  disabled={
+                    process.env.NODE_ENV !== "development" ||
+                    playlistId === "Select Playlist" ||
+                    songsToAdd === ""
+                  }
                   onClick={() => addToPlaylist(songsToAdd)}
                 >
                   Add to playlist
