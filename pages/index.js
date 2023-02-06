@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Head from "next/head";
 import { Row, Col, Button, FormControl } from "react-bootstrap";
 import AllPlaylists from "@/compontents/AllPlaylists";
+import Meta from "@/compontents/Meta";
 
 export default function Home() {
   const [playlistId, setPlaylistId] = useState("Select Playlist");
@@ -35,17 +36,8 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>Playlist Shuffle</title>
-        <meta
-          name='description'
-          content='Have your group add songs to a playlist, play the playlist, then guess who added it.'
-        />
-        <meta name='viewport' content='width=device-width, initial-scale=1' />
-        <link rel='icon' href='/favicon.ico' />
-      </Head>
-
-      <h1 className='main-title'>Spotify</h1>
+      <Meta />
+      <h1>Spotify</h1>
       <Row>
         <Col xs={12} sm={12} md={6} lg={6}>
           <h2>Pick a playlist</h2>
