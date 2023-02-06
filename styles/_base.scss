@@ -16,25 +16,35 @@ body {
 }
 
 main {
-    padding: 24px;
-    margin: 24px;
+    padding: 4%;
+    margin: 4%;
     min-height: 92vh;
     background: rgba($retro-pink, .4);
 }
 
-h1.main-title {
-    font-size: 78px;
+h1 {
+    font-size: 16vw;
     font-weight: 800;
     text-align: center;
 }
 
+.button-group {
+    .col {
+       justify-content: center;
+
+       button { 
+        width: 100%;
+       }
+    }
+}
+
 .fade-in {
-    animation: fadeIn 2s ease;
+    animation: fadeIn 1s ease 1;
 }
 
 @keyframes fadeIn {
-    0% { opacity: 0; margin-top: -20px;}
-    100% { opacity: 1; margin-top: auto; }
+    0% {  opacity: 0; margin-top: -24px;}
+    100% {opacity: 1;  margin-top: 0px; }
   }
 
 

@@ -1,2 +1,7 @@
 $primary: $punk-purple;
 $secondary: $dark-purple;
+$info: $blue;
+
+.container {
+    padding-top: calc(var(--bs-gutter-x) * 0.5);
+}
