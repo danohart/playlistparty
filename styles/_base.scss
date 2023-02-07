@@ -23,7 +23,8 @@ main {
 }
 
 h1 {
-    font-size: 16vw;
+    font-size: 68px;
+    line-break: loose;
     font-weight: 800;
     text-align: center;
 }
@@ -44,7 +45,8 @@ h1 {
     }
 
     &-title {
-        font-size: 2em;
+        font-size: 1.4em;
+        font-weight: 600;
         line-height: 1em;
         text-align: center;
         margin-top: 4px;
