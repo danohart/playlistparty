@@ -22,9 +22,7 @@ export default function PlaylistTracks(props) {
     <>
       <Row>
         {data.map((song) => (
-          <Col xs={6} key={song.id}>
-            <Track song={song} />
-          </Col>
+          <Track {...song} key={song.id} />
         ))}
       </Row>
     </>
