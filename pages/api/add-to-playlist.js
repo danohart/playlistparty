@@ -1,9 +1,13 @@
 import { getAccessToken } from "../../lib/spotify";
+import { getSession } from "next-auth/react";
 
 export default async function addToPlaylist(req, res) {
-  const { access_token } = await getAccessToken();
+  const {
+    token: { accessToken },
+  } = await getSession({ req });
 
-  console.log("body", req.body);
+  const { access_token } = await getAccessToken(accessToken);
+
   const addSong = await fetch(
     `https://api.spotify.com/v1/playlists/${
       req.body.playlistId
@@ -16,5 +20,5 @@ export default async function addToPlaylist(req, res) {
       },
     }
   );
-  console.log(addSong);
+  console.log(addSong.statusText);
 }
