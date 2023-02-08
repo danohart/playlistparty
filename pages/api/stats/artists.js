@@ -1,7 +1,12 @@
 import { topTracksOrArtists } from "../../../lib/spotify";
+import { getSession } from "next-auth/react";
 
 export default async function handler(req, res) {
-  const response = await topTracksOrArtists("artists");
+  const {
+    token: { accessToken },
+  } = await getSession({ req });
+
+  const response = await topTracksOrArtists(accessToken, "artists");
   const { items } = await response.json();
 
   const artists = items.slice(0, 5).map((artist) => ({

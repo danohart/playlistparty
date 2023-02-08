@@ -4,7 +4,7 @@ import AllPlaylists from "@/compontents/AllPlaylists";
 import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
 
-export default function Home() {
+export default function Select() {
   const [playlistId, setPlaylistId] = useState("Select Playlist");
   const [songsToAdd, setSongsToAdd] = useState("");
 
