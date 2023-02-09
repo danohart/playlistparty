@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Row, Col, Button, FormControl } from "react-bootstrap";
 import ResponseMessages from "@/compontents/ResponseMessages";
 
-export default function CreatePlaylist() {
+export default function CreatePlaylist(props) {
   const [playlistName, setPlaylistName] = useState("");
   const [message, setMessage] = useState("");
 
@@ -24,7 +24,13 @@ export default function CreatePlaylist() {
         description: "Playlist Shuffle",
         public: false,
       }),
-    }).then((res) => setMessage(ResponseMessages("playlist", res.status)));
+    }).then((res) =>
+      setMessage(
+        ResponseMessages("playlist", res.status),
+        console.log("response", res)
+        // props.playlistSelect({ target: { value: res.body } })
+      )
+    );
   }
 
   return (

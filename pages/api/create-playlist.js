@@ -20,8 +20,9 @@ export default async function addToPlaylist(req, res) {
         body: JSON.stringify(req.body),
       }
     );
-    res.status(createPlaylist.status);
-    res.end(JSON.stringify(createPlaylist.statusText));
+
+    res.status(createPlaylist.status).json(createPlaylist);
+    res.end();
   } catch (error) {
     res.json(error);
     res.status(createPlaylist.status);

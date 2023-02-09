@@ -48,7 +48,7 @@ export default function Home() {
     <>
       <Meta />
       <h1>{siteTitle}</h1>
-      <CreatePlaylist />
+      <CreatePlaylist playlistSelect={playlistSelect} />
       <Row>
         <Col xs={12} sm={12} md={6} lg={6}>
           <h2>Pick a playlist</h2>
