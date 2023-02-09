@@ -17,7 +17,8 @@ export default function Layout({ children }) {
                 <Button
                   variant='outline-primary'
                   onClick={() => signOut()}
-                  className='ms-1'
+                  className='mt-1'
+                  size='sm'
                 >
                   Sign out
                 </Button>

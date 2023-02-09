@@ -5,6 +5,7 @@ import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
 import PlaylistTracks from "@/compontents/PlaylistTracks";
 import addSongsMessage from "@/compontents/ResponseMessages";
+import CreatePlaylist from "@/compontents/CreatePlaylist";
 
 export default function Home() {
   const [playlistId, setPlaylistId] = useState("Select Playlist");
@@ -27,7 +28,7 @@ export default function Home() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ uris: [songUri], playlistId }),
-    }).then((res) => setMessage(addSongsMessage(res.status)));
+    }).then((res) => setMessage(addSongsMessage("songs", res.status)));
   }
 
   function handleChange(e) {
@@ -47,6 +48,7 @@ export default function Home() {
     <>
       <Meta />
       <h1>{siteTitle}</h1>
+      <CreatePlaylist />
       <Row>
         <Col xs={12} sm={12} md={6} lg={6}>
           <h2>Pick a playlist</h2>
