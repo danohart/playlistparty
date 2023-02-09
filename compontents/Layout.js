@@ -61,7 +61,7 @@ export default function Layout({ children }) {
               </Col>
               <Row>
                 <Col className='text-center mt-3'>
-                  You'll need a Spotify account to get the game started.
+                  You'll need a Spotify account to get started.
                 </Col>
               </Row>
             </main>

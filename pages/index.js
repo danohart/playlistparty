@@ -4,6 +4,7 @@ import AllPlaylists from "@/compontents/AllPlaylists";
 import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
 import PlaylistTracks from "@/compontents/PlaylistTracks";
+import addSongsMessage from "@/compontents/ResponseMessages";
 
 export default function Home() {
   const [playlistId, setPlaylistId] = useState("Select Playlist");
@@ -14,20 +15,6 @@ export default function Home() {
     if (localStorage.getItem("playlistId"))
       setPlaylistId(localStorage.getItem("playlistId"));
   }, []);
-
-  function addSongsMessage(code) {
-    if (code === 201) setMessage("Success! Songs added to playlist.");
-    if (code === 401)
-      setMessage("Looks like you need to log out and log in again.");
-    if (code === 403)
-      setMessage(
-        `Looks like you don't have permission to add songs to this playlist.`
-      );
-    if (code === 429)
-      setMessage(
-        "Looks like the game is having connection issues with Spotify. Try again later."
-      );
-  }
 
   function addToPlaylist(songs) {
     const songId = songs.split("/", 10)[4].split("?", 1);
@@ -40,7 +27,7 @@ export default function Home() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ uris: [songUri], playlistId }),
-    }).then((res) => addSongsMessage(res.status));
+    }).then((res) => setMessage(addSongsMessage(res.status)));
   }
 
   function handleChange(e) {
