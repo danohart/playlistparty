@@ -24,11 +24,10 @@ export default function CreatePlaylist(props) {
         description: "Playlist Shuffle",
         public: false,
       }),
-    }).then((res) =>
+    }).then(async (res) =>
       setMessage(
         ResponseMessages("playlist", res.status),
-        console.log("response", res)
-        // props.playlistSelect({ target: { value: res.body } })
+        props.playlistSelect({ target: { value: await res.json() } })
       )
     );
   }

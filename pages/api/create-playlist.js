@@ -21,7 +21,9 @@ export default async function addToPlaylist(req, res) {
       }
     );
 
-    res.status(createPlaylist.status).json(createPlaylist);
+    const data = await createPlaylist.json();
+
+    res.status(createPlaylist.status).json(data.id);
     res.end();
   } catch (error) {
     res.json(error);
