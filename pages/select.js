@@ -7,7 +7,10 @@ import SearchSpotify from "@/compontents/SearchSpotify";
 import addSongsMessage from "@/compontents/ResponseMessages";
 
 export default function Select({ username }) {
-  let playlistId = localStorage.getItem("playlistId") || null;
+  let playlistId = null;
+  if (typeof window !== "undefined") {
+    playlistId = localStorage.getItem("playlistId") || null;
+  }
 
   const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
     cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
