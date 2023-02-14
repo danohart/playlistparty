@@ -1,13 +1,8 @@
 import { getAccessToken } from "../../lib/spotify";
-import { getSession } from "next-auth/react";
 
 export default async function addToPlaylist(req, res) {
   try {
-    const {
-      token: { accessToken },
-    } = await getSession({ req });
-
-    const { access_token } = await getAccessToken(accessToken);
+    const { access_token } = await getAccessToken();
     const addSong = await fetch(
       `https://api.spotify.com/v1/playlists/${
         req.body.playlistId
