@@ -3,40 +3,18 @@ import { Row, Col, Button, FormControl } from "react-bootstrap";
 import AllPlaylists from "@/compontents/AllPlaylists";
 import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
-import PlaylistTracks from "@/compontents/PlaylistTracks";
-import addSongsMessage from "@/compontents/ResponseMessages";
 import CreatePlaylist from "@/compontents/CreatePlaylist";
+import JoinRoom from "@/compontents/JoinRoom";
 
-export default function Home() {
+export default function Home({ handleLogin, handleLoginChange }) {
   const [playlistId, setPlaylistId] = useState("Select Playlist");
-  const [songsToAdd, setSongsToAdd] = useState("");
-  const [message, setMessage] = useState(null);
+  const [joinGame, setJoinGame] = useState(false);
+  const [joinRoomNumber, setJoinRoomNumber] = useState("4567");
 
   useEffect(() => {
     if (localStorage.getItem("playlistId"))
       setPlaylistId(localStorage.getItem("playlistId"));
   }, []);
-
-  function addToPlaylist(songs) {
-    const songId = songs.split("/", 10)[4].split("?", 1);
-
-    const songUri = "spotify:track:" + songId;
-
-    fetch("/api/add-to-playlist", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ uris: [songUri], playlistId }),
-    }).then((res) => setMessage(addSongsMessage("songs", res.status)));
-  }
-
-  function handleChange(e) {
-    e.preventDefault;
-    const formData = e.target.value;
-
-    setSongsToAdd(formData);
-  }
 
   function playlistSelect(e) {
     const selection = e.target.value;
@@ -44,61 +22,62 @@ export default function Home() {
     localStorage.setItem("playlistId", selection);
   }
 
+  function roomNumber(e) {
+    setJoinRoomNumber(e.target.value);
+  }
+
   return (
     <>
       <Meta />
       <h1>{siteTitle}</h1>
-      <CreatePlaylist playlistSelect={playlistSelect} />
-      <Row>
-        <Col xs={12} sm={12} md={6} lg={6}>
-          <h2>Pick a playlist</h2>
-          <AllPlaylists
-            playlistSelect={playlistSelect}
-            playlistId={playlistId}
+      {playlistId === "Select Playlist" ? (
+        <>
+          <CreatePlaylist playlistSelect={playlistSelect} />
+          <JoinRoom />
+          <FormControl
+            type='text'
+            className='mt-2'
+            onChange={handleLoginChange}
+            placeholder='Your name'
           />
-        </Col>
-        <Col xs={12} sm={12} md={6} lg={6}>
+          <Button
+            className='mt-2'
+            size='lg'
+            onClick={() => handleLogin(joinRoomNumber)}
+          >
+            Or join a room
+          </Button>
+        </>
+      ) : (
+        <>
           <Row>
-            <Col xs={12} sm={12} md={12} lg={12}>
-              <h2>Song to add</h2>
-            </Col>
-            <Col xs={12} sm={12} md={12} lg={12}>
-              <FormControl
-                placeholder='Enter song id'
-                value={songsToAdd}
-                onChange={handleChange}
+            <Col xs={12} sm={12} md={6} lg={6}>
+              <h2>Playlist Selected</h2>
+              <AllPlaylists
+                playlistSelect={playlistSelect}
+                playlistId={playlistId}
               />
             </Col>
           </Row>
-          <Row className='mt-2'>
-            <Col>
+          <JoinRoom />
+          <Row>
+            <Col className='mt-2'>
+              <h2>Type a name</h2>
+              <FormControl
+                type='text'
+                onChange={handleLoginChange}
+                placeholder='Your name'
+              />
               <Button
-                disabled={
-                  process.env.NODE_ENV !== "development" ||
-                  playlistId === "Select Playlist" ||
-                  songsToAdd === ""
-                }
-                onClick={() => addToPlaylist(songsToAdd)}
-                size='lg'
+                className='mt-2'
+                onClick={() => handleLogin(joinRoomNumber)}
               >
-                Add to playlist
+                Let's get started!
               </Button>
             </Col>
           </Row>
-          {message ? (
-            <Row>
-              <Col>{message}</Col>
-            </Row>
-          ) : null}
-          <Row>
-            <Col>
-              {playlistId !== "Select Playlist" ? (
-                <PlaylistTracks playlistId={playlistId} />
-              ) : null}
-            </Col>
-          </Row>
-        </Col>
-      </Row>
+        </>
+      )}
     </>
   );
 }

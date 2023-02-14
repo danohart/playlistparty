@@ -46,9 +46,7 @@ export default function CreatePlaylist(props) {
       <Row className='mt-2'>
         <Col>
           <Button
-            disabled={
-              process.env.NODE_ENV !== "development" || playlistName === ""
-            }
+            disabled={playlistName === ""}
             onClick={() => createPlaylist(playlistName)}
             size='lg'
           >
