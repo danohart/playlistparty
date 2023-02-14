@@ -151,7 +151,8 @@ export default function Select({ username }) {
           ) : null}
           <Row>
             <Col>
-              Who's here? - {onlineUsers.map((user) => user.username + " ")}
+              Who&apos;s here? -{" "}
+              {onlineUsers.map((user) => user.username + " ")}
             </Col>
           </Row>
         </Col>

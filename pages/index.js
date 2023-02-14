@@ -72,7 +72,7 @@ export default function Home({ handleLogin, handleLoginChange }) {
                 className='mt-2'
                 onClick={() => handleLogin(joinRoomNumber)}
               >
-                Let's get started!
+                Let&apos;s get started!
               </Button>
             </Col>
           </Row>
