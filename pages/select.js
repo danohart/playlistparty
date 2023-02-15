@@ -24,7 +24,6 @@ export default function Select({ username }) {
   ]);
   const [onlineUserCount, setOnlineUsersCount] = useState(0);
   const [messageToSend, setMessageToSend] = useState("");
-  const [songsToAdd, setSongsToAdd] = useState("");
   const [message, setMessage] = useState(null);
   const [roomNumber, setRoomNumber] = useState(0);
 
@@ -62,7 +61,6 @@ export default function Select({ username }) {
     // updates chats
     channel.bind("playlist-update", function (data) {
       const { username, message } = data;
-
       setChats((prevState) => [...prevState, { username, message }]);
     });
 
@@ -101,11 +99,7 @@ export default function Select({ username }) {
       body: JSON.stringify({ uris: [songUri], playlistId }),
     }).then((res) => setMessage(addSongsMessage("songs", res.status)));
   }
-
-  function selectTrack(trackId) {
-    setSongsToAdd(trackId);
-  }
-
+  console.log("chats", chats);
   return (
     <>
       <Meta />

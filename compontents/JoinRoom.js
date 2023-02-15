@@ -5,6 +5,7 @@ export default function JoinRoom({ roomNumber }) {
     <>
       <Row className='mt-2'>
         <Col>
+          <h2>Room Code</h2>
           <FormControl type='text' placeholder='ABCD' onChange={roomNumber} />
         </Col>
       </Row>
