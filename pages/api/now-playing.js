@@ -1,11 +1,6 @@
 import { currentlyPlayingSong } from "../../lib/spotify";
-import { getSession } from "next-auth/react";
 
 export default async function handler(req, res) {
-  const {
-    token: { accessToken },
-  } = await getSession({ req });
-
   const response = await currentlyPlayingSong(accessToken);
 
   if (response.status === 204 || response.status > 400) {

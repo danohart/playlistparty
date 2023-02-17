@@ -3,36 +3,21 @@ import { Row, Col, Button, FormControl } from "react-bootstrap";
 import AllPlaylists from "@/compontents/AllPlaylists";
 import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
+import CreatePlaylist from "@/compontents/CreatePlaylist";
+import JoinRoom from "@/compontents/JoinRoom";
 
-export default function Home() {
+export default function Home({
+  handleLogin,
+  handleLoginChange,
+  handleRoomChange,
+}) {
   const [playlistId, setPlaylistId] = useState("Select Playlist");
-  const [songsToAdd, setSongsToAdd] = useState("");
+  const [joinGame, setJoinGame] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem("playlistId"))
       setPlaylistId(localStorage.getItem("playlistId"));
   }, []);
-
-  function addToPlaylist(songs) {
-    const songId = songs.split("/", 10)[4].split("?", 1);
-
-    const songUri = "spotify:track:" + songId;
-
-    fetch("/api/add-to-playlist", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ uris: [songUri], playlistId }),
-    });
-  }
-
-  function handleChange(e) {
-    e.preventDefault;
-    const formData = e.target.value;
-
-    setSongsToAdd(formData);
-  }
 
   function playlistSelect(e) {
     const selection = e.target.value;
@@ -44,42 +29,45 @@ export default function Home() {
     <>
       <Meta />
       <h1>{siteTitle}</h1>
-      <Row>
-        <Col xs={12} sm={12} md={6} lg={6}>
-          <h2>Pick a playlist</h2>
-          <AllPlaylists
-            playlistSelect={playlistSelect}
-            playlistId={playlistId}
-          />
-        </Col>
-        <Col xs={12} sm={12} md={6} lg={6}>
+      {playlistId === "Select Playlist" ? (
+        <>
+          <h2>Create a new playlist</h2>
+          <CreatePlaylist playlistSelect={playlistSelect} />
+        </>
+      ) : (
+        <>
           <Row>
-            <Col xs={12} sm={12} md={12} lg={12}>
-              <h2>Song to add</h2>
-            </Col>
-            <Col xs={12} sm={12} md={12} lg={12}>
-              <FormControl
-                placeholder='Enter song id'
-                value={songsToAdd}
-                onChange={handleChange}
+            <Col xs={12} sm={12} md={6} lg={6}>
+              <h2>Playlist Selected</h2>
+              <AllPlaylists
+                playlistSelect={playlistSelect}
+                playlistId={playlistId}
               />
             </Col>
           </Row>
-          <Row className='mt-2'>
-            <Col>
-              <Button
-                disabled={
-                  process.env.NODE_ENV !== "development" ||
-                  playlistId === "Select Playlist" ||
-                  songsToAdd === ""
-                }
-                onClick={() => addToPlaylist(songsToAdd)}
-                size='lg'
-              >
-                Add to playlist
-              </Button>
-            </Col>
-          </Row>
+        </>
+      )}
+      {playlistId === "Select Playlist" ? <h1>OR</h1> : null}
+      <Row className='mt-4'>
+        <Col>
+          <h2>Join a room</h2>
+        </Col>
+      </Row>
+      <hr />
+      <JoinRoom handleRoomChange={handleRoomChange} />
+      <Row className='mt-2'>
+        <Col>
+          <h2>Pick a name</h2>
+          <FormControl
+            type='text'
+            className='mt-2'
+            onChange={handleLoginChange}
+            placeholder='Your name'
+            required
+          />
+          <Button className='mt-2' size='lg' onClick={handleLogin}>
+            Join room
+          </Button>
         </Col>
       </Row>
     </>

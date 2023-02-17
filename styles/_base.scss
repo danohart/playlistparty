@@ -18,7 +18,7 @@ body {
 main {
     padding: 4%;
     margin: 4%;
-    min-height: 92vh;
+    min-height: 80vh;
     background: rgba($retro-pink, .4);
 }
 
@@ -30,7 +30,8 @@ h1 {
 }
 
 .track {
-    margin: 10px;
+    margin-top: 8px;
+    margin-bottom: 8px;
 
     &-image {
         img {
@@ -45,7 +46,7 @@ h1 {
     }
 
     &-title {
-        font-size: 1.4em;
+        font-size: 1em;
         font-weight: 600;
         line-height: 1em;
         text-align: center;
@@ -61,6 +62,7 @@ h1 {
         text-align: center;
         font-weight: 200;
         margin-top: 4px;
+        line-height: initial;
     }
 }
 
@@ -71,6 +73,64 @@ h1 {
        button { 
         width: 100%;
        }
+    }
+}
+
+.room-id {
+    background-color: $retro-pink;
+    width: 160px;
+    display: block;
+    padding: 8px 10px;
+    margin: 10px auto;
+    font-size: 36px;
+    text-align: center;
+    box-shadow: 0px 0px 5px #00000026;
+}
+
+.user-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+
+    .user-id {
+        background-color: $retro-pink;
+        padding: 8px 10px;
+        margin: 6px;
+        font-size: 16px;
+        text-align: center;
+        box-shadow: 0px 0px 5px #00000026;
+
+        @for $i from 1 through 4 {
+            &:nth-child(4n + #{$i}) {
+              background-color: darken($blue, $i * 6%);
+            }
+          }
+          
+    }
+}
+
+.chat {
+    display: flex;
+    flex-direction: row;
+
+    &-message {
+        background-color: $sunny-yellow;
+        color: #000;
+        padding: 2px 6px;
+        border-radius: 4px;
+        @for $i from 1 through 10 {
+            &:nth-child(10n + #{$i}) {
+              background-color: darken($sunny-yellow, $i * 6%);
+            }
+        }
+    }
+
+    &-username {
+        margin-bottom: 14px;
+        font-size: 14px;
+        font-weight: 400;
+        text-align: right;
     }
 }
 

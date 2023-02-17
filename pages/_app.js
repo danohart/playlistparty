@@ -1,16 +1,27 @@
-import { SessionProvider } from "next-auth/react";
+import React, { useState } from "react";
 import "@/styles/style.scss";
 import Layout from "@/compontents/Layout";
+import { useRouter } from "next/router";
 
-export default function App({
-  Component,
-  pageProps: { session, ...pageProps },
-}) {
+export default function App({ Component, pageProps: { ...pageProps } }) {
+  const [username, setUsername] = useState("");
+  const [roomNumber, setRoomNumber] = useState("");
+  const router = useRouter();
+
+  const handleLogin = () => {
+    router.push(`/select?roomNumber=${roomNumber}`);
+  };
+
   return (
-    <SessionProvider session={session}>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
-    </SessionProvider>
+    <Layout>
+      <Component
+        handleLoginChange={(e) => setUsername(e.target.value)}
+        handleLogin={handleLogin}
+        username={username}
+        roomNumber={roomNumber}
+        handleRoomChange={(e) => setRoomNumber(e.target.value)}
+        {...pageProps}
+      />
+    </Layout>
   );
 }

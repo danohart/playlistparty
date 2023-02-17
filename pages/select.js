@@ -1,22 +1,116 @@
 import React, { useState, useEffect } from "react";
+import Pusher from "pusher-js";
 import { Row, Col, Button, FormControl } from "react-bootstrap";
-import AllPlaylists from "@/compontents/AllPlaylists";
 import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
+import SearchSpotify from "@/compontents/SearchSpotify";
+import addSongsMessage from "@/compontents/ResponseMessages";
 
-export default function Select() {
-  const [playlistId, setPlaylistId] = useState("Select Playlist");
-  const [songsToAdd, setSongsToAdd] = useState("");
+export default function Select({ username, roomNumber }) {
+  const [playlistId, setPlaylistId] = useState(null);
+  const [chats, setChats] = useState([]);
+  const [onlineUsers, setOnlineUsers] = useState([
+    { username: username + "(you)" },
+  ]);
+  const [onlineUserCount, setOnlineUsersCount] = useState(0);
+  const [messageToSend, setMessageToSend] = useState("");
+  const [message, setMessage] = useState(null);
+
+  const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
+    // use jwts in prod
+    authEndpoint: `api/pusher/auth`,
+    auth: { params: { username, playlistId } },
+  });
+
+  async function setPlaylistIdForRoom(playlistId) {
+    await fetch("/api/pusher/playlist", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ playlistId, username, roomNumber }),
+    });
+  }
 
   useEffect(() => {
-    if (localStorage.getItem("playlistId"))
-      setPlaylistId(localStorage.getItem("playlistId"));
+    const channel = pusher.subscribe(`presence-playlist-shuffle-${roomNumber}`);
+    const playlistChannel = pusher.subscribe(
+      `presence-cache-playlist-shuffle-${roomNumber}-playlist`
+    );
+
+    playlistChannel.bind("pusher:subscription_succeeded", (members) => {
+      if (members.me.info.isVip) {
+        setPlaylistIdForRoom(members.me.info.playlistId);
+      }
+    });
+    // when a new member successfully subscribes to the channel
+    channel.bind("pusher:subscription_succeeded", (members) => {
+      // total subscribed
+      setOnlineUsersCount(members.count);
+      // setOnlineUsers((prevState) => [
+      //   ...prevState,
+      //   {
+      //     username: members.me.username,
+      //   },
+      // ]);
+    });
+
+    // when a new member joins the chat
+    channel.bind("pusher:member_added", (member) => {
+      setOnlineUsersCount(channel.members.count);
+      setOnlineUsers((prevState) => [
+        ...prevState,
+        {
+          username: member.info.username,
+        },
+      ]);
+    });
+
+    // when a member leaves the chat
+    channel.bind("pusher:member_removed", (member) => {
+      setOnlineUsersCount(channel.members.count);
+      setOnlineUsers((prevState) => [
+        ...prevState,
+        {
+          username: member.info.username,
+        },
+      ]);
+    });
+
+    // updates chats
+    channel.bind("playlist-update", function (data) {
+      const { username, message } = data;
+      setChats((prevState) => [...prevState, { username, message }]);
+    });
+
+    // updates playlistId
+    playlistChannel.bind("playlist-id", function (data) {
+      setPlaylistId(data.playlistId);
+    });
+
+    return () => {
+      pusher.unsubscribe(`presence-playlist-shuffle-${roomNumber}`);
+      pusher.unsubscribe(
+        `presence-cache-playlist-shuffle-${roomNumber}-playlist`
+      );
+    };
   }, []);
 
-  function addToPlaylist(songs) {
-    const songId = songs.split("/", 10)[4].split("?", 1);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const songUri = "spotify:track:" + songId;
+    await fetch("/api/pusher/update", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message: messageToSend, username, roomNumber }),
+    }).then(setMessageToSend(""));
+  };
+
+  function addToPlaylist(songs) {
+    const songUri = "spotify:track:" + songs;
 
     fetch("/api/add-to-playlist", {
       method: "POST",
@@ -24,62 +118,73 @@ export default function Select() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ uris: [songUri], playlistId }),
-    });
-  }
-
-  function handleChange(e) {
-    e.preventDefault;
-    const formData = e.target.value;
-
-    setSongsToAdd(formData);
-  }
-
-  function playlistSelect(e) {
-    const selection = e.target.value;
-    setPlaylistId(selection);
-    localStorage.setItem("playlistId", selection);
+    }).then((res) => setMessage(addSongsMessage("songs", res.status)));
   }
 
   return (
     <>
-      <Meta />
+      <Meta title={`Welcome ${username}!`} />
       <h1>{siteTitle}</h1>
       <Row>
-        <Col xs={12} sm={12} md={6} lg={6}>
-          <h2>Pick a playlist</h2>
-          <AllPlaylists
-            playlistSelect={playlistSelect}
-            playlistId={playlistId}
-          />
+        <Col xs={12} sm={12} md={12} lg={12}>
+          <div className='room-id'>{roomNumber}</div>
+          <h2>People in: {onlineUserCount}</h2>
+          <div className='user-row'>
+            {onlineUsers.map((user) => (
+              <div className='user-id' key={user.username}>
+                {user.username}
+              </div>
+            ))}
+          </div>
         </Col>
-        <Col xs={12} sm={12} md={6} lg={6}>
+
+        <Col xs={12} sm={12} md={12} lg={12}>
+          <SearchSpotify selectTrack={addToPlaylist} />
+        </Col>
+        <Col xs={12} sm={12} md={12} lg={12}>
           <Row>
-            <Col xs={12} sm={12} md={12} lg={12}>
-              <h2>Song to add</h2>
-            </Col>
-            <Col xs={12} sm={12} md={12} lg={12}>
-              <FormControl
-                placeholder='Enter song id'
-                value={songsToAdd}
-                onChange={handleChange}
-              />
-            </Col>
-          </Row>
-          <Row className='mt-2'>
             <Col>
-              <Button
-                disabled={
-                  process.env.NODE_ENV !== "development" ||
-                  playlistId === "Select Playlist" ||
-                  songsToAdd === ""
-                }
-                onClick={() => addToPlaylist(songsToAdd)}
-                size='lg'
-              >
-                Add to playlist
-              </Button>
+              <h2>Chat</h2>
+              <Row className='chat'>
+                {chats.map((chat, id) => (
+                  <Col xs={12} sm={12} md={12} lg={12} key={id}>
+                    <div className='chat-message'>{chat.message}</div>
+                    <div className='chat-username'>{chat.username}</div>
+                  </Col>
+                ))}
+              </Row>
             </Col>
           </Row>
+        </Col>
+        <Col>
+          <form
+            onSubmit={(e) => {
+              handleSubmit(e);
+            }}
+          >
+            <FormControl
+              type='text'
+              value={messageToSend}
+              onChange={(e) => setMessageToSend(e.target.value)}
+              placeholder='start typing....'
+            />
+            <Button
+              className='w-50 mt-2'
+              type='submit'
+              disabled={!messageToSend}
+            >
+              Send
+            </Button>
+          </form>
+        </Col>
+      </Row>
+      <Row>
+        <Col xs={12} sm={12} md={12} lg={12}>
+          {message ? (
+            <Row>
+              <Col>{message}</Col>
+            </Row>
+          ) : null}
         </Col>
       </Row>
     </>
