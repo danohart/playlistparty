@@ -110,13 +110,6 @@ export default function Select({ username, roomNumber }) {
   };
 
   function addToPlaylist(songs) {
-    // if (songs.indexOf("https://open.spotify")) {
-    //   setMessage("Oops! Please put in an official share URL");
-    //   return;
-    // }
-
-    // const songId = songs.split("/", 10)[4].split("?", 1);
-
     const songUri = "spotify:track:" + songs;
 
     fetch("/api/add-to-playlist", {
@@ -133,17 +126,36 @@ export default function Select({ username, roomNumber }) {
       <Meta title={`Welcome ${username}!`} />
       <h1>{siteTitle}</h1>
       <Row>
-        <Col xs={12} sm={12} md={6} lg={6}>
+        <Col xs={12} sm={12} md={12} lg={12}>
+          <div className='room-id'>{roomNumber}</div>
           <h2>People in: {onlineUserCount}</h2>
-          <div>Room Number: {roomNumber}</div>
+          <div className='user-row'>
+            {onlineUsers.map((user) => (
+              <div className='user-id' key={user.username}>
+                {user.username}
+              </div>
+            ))}
+          </div>
         </Col>
-        {chats.map((chat, id) => (
-          <Row key={id}>
+
+        <Col xs={12} sm={12} md={12} lg={12}>
+          <SearchSpotify selectTrack={addToPlaylist} />
+        </Col>
+        <Col xs={12} sm={12} md={12} lg={12}>
+          <Row>
             <Col>
-              {chat.username}: {chat.message}
+              <h2>Chat</h2>
+              <Row className='chat'>
+                {chats.map((chat, id) => (
+                  <Col xs={12} sm={12} md={12} lg={12} key={id}>
+                    <div className='chat-message'>{chat.message}</div>
+                    <div className='chat-username'>{chat.username}</div>
+                  </Col>
+                ))}
+              </Row>
             </Col>
           </Row>
-        ))}
+        </Col>
         <Col>
           <form
             onSubmit={(e) => {
@@ -167,19 +179,12 @@ export default function Select({ username, roomNumber }) {
         </Col>
       </Row>
       <Row>
-        <Col xs={12} sm={12} md={6} lg={6}>
-          <SearchSpotify selectTrack={addToPlaylist} />
+        <Col xs={12} sm={12} md={12} lg={12}>
           {message ? (
             <Row>
               <Col>{message}</Col>
             </Row>
           ) : null}
-          <Row>
-            <Col>
-              Who&apos;s here? -{" "}
-              {onlineUsers.map((user) => user.username + " ")}
-            </Col>
-          </Row>
         </Col>
       </Row>
     </>

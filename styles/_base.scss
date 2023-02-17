@@ -76,6 +76,64 @@ h1 {
     }
 }
 
+.room-id {
+    background-color: $retro-pink;
+    width: 160px;
+    display: block;
+    padding: 8px 10px;
+    margin: 10px auto;
+    font-size: 36px;
+    text-align: center;
+    box-shadow: 0px 0px 5px #00000026;
+}
+
+.user-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+
+    .user-id {
+        background-color: $retro-pink;
+        padding: 8px 10px;
+        margin: 6px;
+        font-size: 16px;
+        text-align: center;
+        box-shadow: 0px 0px 5px #00000026;
+
+        @for $i from 1 through 4 {
+            &:nth-child(4n + #{$i}) {
+              background-color: darken($blue, $i * 6%);
+            }
+          }
+          
+    }
+}
+
+.chat {
+    display: flex;
+    flex-direction: row;
+
+    &-message {
+        background-color: $sunny-yellow;
+        color: #000;
+        padding: 2px 6px;
+        border-radius: 4px;
+        @for $i from 1 through 10 {
+            &:nth-child(10n + #{$i}) {
+              background-color: darken($sunny-yellow, $i * 6%);
+            }
+        }
+    }
+
+    &-username {
+        margin-bottom: 14px;
+        font-size: 14px;
+        font-weight: 400;
+        text-align: right;
+    }
+}
+
 .fade-in {
     animation: fadeIn 1s ease 1;
 }

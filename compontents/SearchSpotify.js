@@ -15,7 +15,7 @@ export default function SearchSpotify({ selectTrack }) {
     <>
       <Row>
         <Col>
-          <h2>Search</h2>
+          <h2>Find a song</h2>
           <FormControl
             type='text'
             value={searchTerm}
@@ -53,7 +53,7 @@ export default function SearchSpotify({ selectTrack }) {
                         className='mt-2'
                         onClick={() => selectTrack(result.id)}
                       >
-                        Select this song
+                        Add to playlist
                       </Button>
                     </Col>
                   </Row>

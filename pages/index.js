@@ -31,17 +31,8 @@ export default function Home({
       <h1>{siteTitle}</h1>
       {playlistId === "Select Playlist" ? (
         <>
+          <h2>Create a new playlist</h2>
           <CreatePlaylist playlistSelect={playlistSelect} />
-          <JoinRoom handleRoomChange={handleRoomChange} />
-          <FormControl
-            type='text'
-            className='mt-2'
-            onChange={handleLoginChange}
-            placeholder='Your name'
-          />
-          <Button className='mt-2' size='lg' onClick={handleLogin}>
-            Or join a room
-          </Button>
         </>
       ) : (
         <>
@@ -54,22 +45,31 @@ export default function Home({
               />
             </Col>
           </Row>
-          <JoinRoom handleRoomChange={handleRoomChange} />
-          <Row>
-            <Col className='mt-2'>
-              <h2>Type a name</h2>
-              <FormControl
-                type='text'
-                onChange={handleLoginChange}
-                placeholder='Your name'
-              />
-              <Button className='mt-2' onClick={handleLogin}>
-                Let&apos;s get started!
-              </Button>
-            </Col>
-          </Row>
         </>
       )}
+      {playlistId === "Select Playlist" ? <h1>OR</h1> : null}
+      <Row className='mt-4'>
+        <Col>
+          <h2>Join a room</h2>
+        </Col>
+      </Row>
+      <hr />
+      <JoinRoom handleRoomChange={handleRoomChange} />
+      <Row className='mt-2'>
+        <Col>
+          <h2>Pick a name</h2>
+          <FormControl
+            type='text'
+            className='mt-2'
+            onChange={handleLoginChange}
+            placeholder='Your name'
+            required
+          />
+          <Button className='mt-2' size='lg' onClick={handleLogin}>
+            Join room
+          </Button>
+        </Col>
+      </Row>
     </>
   );
 }
