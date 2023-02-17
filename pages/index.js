@@ -6,10 +6,13 @@ import { siteTitle } from "@/lib/constants";
 import CreatePlaylist from "@/compontents/CreatePlaylist";
 import JoinRoom from "@/compontents/JoinRoom";
 
-export default function Home({ handleLogin, handleLoginChange }) {
+export default function Home({
+  handleLogin,
+  handleLoginChange,
+  handleRoomChange,
+}) {
   const [playlistId, setPlaylistId] = useState("Select Playlist");
   const [joinGame, setJoinGame] = useState(false);
-  const [joinRoomNumber, setJoinRoomNumber] = useState("4567");
 
   useEffect(() => {
     if (localStorage.getItem("playlistId"))
@@ -22,10 +25,6 @@ export default function Home({ handleLogin, handleLoginChange }) {
     localStorage.setItem("playlistId", selection);
   }
 
-  function roomNumber(e) {
-    setJoinRoomNumber(e.target.value);
-  }
-
   return (
     <>
       <Meta />
@@ -33,18 +32,14 @@ export default function Home({ handleLogin, handleLoginChange }) {
       {playlistId === "Select Playlist" ? (
         <>
           <CreatePlaylist playlistSelect={playlistSelect} />
-          <JoinRoom />
+          <JoinRoom handleRoomChange={handleRoomChange} />
           <FormControl
             type='text'
             className='mt-2'
             onChange={handleLoginChange}
             placeholder='Your name'
           />
-          <Button
-            className='mt-2'
-            size='lg'
-            onClick={() => handleLogin(joinRoomNumber)}
-          >
+          <Button className='mt-2' size='lg' onClick={handleLogin}>
             Or join a room
           </Button>
         </>
@@ -59,7 +54,7 @@ export default function Home({ handleLogin, handleLoginChange }) {
               />
             </Col>
           </Row>
-          <JoinRoom />
+          <JoinRoom handleRoomChange={handleRoomChange} />
           <Row>
             <Col className='mt-2'>
               <h2>Type a name</h2>
@@ -68,10 +63,7 @@ export default function Home({ handleLogin, handleLoginChange }) {
                 onChange={handleLoginChange}
                 placeholder='Your name'
               />
-              <Button
-                className='mt-2'
-                onClick={() => handleLogin(joinRoomNumber)}
-              >
+              <Button className='mt-2' onClick={handleLogin}>
                 Let&apos;s get started!
               </Button>
             </Col>

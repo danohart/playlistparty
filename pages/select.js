@@ -6,18 +6,8 @@ import { siteTitle } from "@/lib/constants";
 import SearchSpotify from "@/compontents/SearchSpotify";
 import addSongsMessage from "@/compontents/ResponseMessages";
 
-export default function Select({ username }) {
-  let playlistId = null;
-  if (typeof window !== "undefined") {
-    playlistId = localStorage.getItem("playlistId") || null;
-  }
-
-  const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
-    // use jwts in prod
-    authEndpoint: `api/pusher/auth`,
-    auth: { params: { username, playlistId } },
-  });
+export default function Select({ username, roomNumber }) {
+  const [playlistId, setPlaylistId] = useState(null);
   const [chats, setChats] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState([
     { username: username + "(you)" },
@@ -25,25 +15,49 @@ export default function Select({ username }) {
   const [onlineUserCount, setOnlineUsersCount] = useState(0);
   const [messageToSend, setMessageToSend] = useState("");
   const [message, setMessage] = useState(null);
-  const [roomNumber, setRoomNumber] = useState(0);
+
+  const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
+    // use jwts in prod
+    authEndpoint: `api/pusher/auth`,
+    auth: { params: { username, playlistId } },
+  });
+
+  async function setPlaylistIdForRoom(playlistId) {
+    await fetch("/api/pusher/playlist", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ playlistId, username, roomNumber }),
+    });
+  }
 
   useEffect(() => {
-    if (typeof window !== "undefined")
-      setRoomNumber(
-        new URLSearchParams(window.location.search).get("roomNumber")
-      );
-
     const channel = pusher.subscribe(`presence-playlist-shuffle-${roomNumber}`);
+    const playlistChannel = pusher.subscribe(
+      `presence-cache-playlist-shuffle-${roomNumber}-playlist`
+    );
 
+    playlistChannel.bind("pusher:subscription_succeeded", (members) => {
+      if (members.me.info.isVip) {
+        setPlaylistIdForRoom(members.me.info.playlistId);
+      }
+    });
     // when a new member successfully subscribes to the channel
     channel.bind("pusher:subscription_succeeded", (members) => {
       // total subscribed
       setOnlineUsersCount(members.count);
+      // setOnlineUsers((prevState) => [
+      //   ...prevState,
+      //   {
+      //     username: members.me.username,
+      //   },
+      // ]);
     });
 
     // when a new member joins the chat
     channel.bind("pusher:member_added", (member) => {
-      console.log("member", member.info);
       setOnlineUsersCount(channel.members.count);
       setOnlineUsers((prevState) => [
         ...prevState,
@@ -56,6 +70,12 @@ export default function Select({ username }) {
     // when a member leaves the chat
     channel.bind("pusher:member_removed", (member) => {
       setOnlineUsersCount(channel.members.count);
+      setOnlineUsers((prevState) => [
+        ...prevState,
+        {
+          username: member.info.username,
+        },
+      ]);
     });
 
     // updates chats
@@ -64,8 +84,16 @@ export default function Select({ username }) {
       setChats((prevState) => [...prevState, { username, message }]);
     });
 
+    // updates playlistId
+    playlistChannel.bind("playlist-id", function (data) {
+      setPlaylistId(data.playlistId);
+    });
+
     return () => {
       pusher.unsubscribe(`presence-playlist-shuffle-${roomNumber}`);
+      pusher.unsubscribe(
+        `presence-cache-playlist-shuffle-${roomNumber}-playlist`
+      );
     };
   }, []);
 
@@ -99,10 +127,10 @@ export default function Select({ username }) {
       body: JSON.stringify({ uris: [songUri], playlistId }),
     }).then((res) => setMessage(addSongsMessage("songs", res.status)));
   }
-  console.log("chats", chats);
+
   return (
     <>
-      <Meta />
+      <Meta title={`Welcome ${username}!`} />
       <h1>{siteTitle}</h1>
       <Row>
         <Col xs={12} sm={12} md={6} lg={6}>

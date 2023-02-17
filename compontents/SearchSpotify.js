@@ -25,8 +25,8 @@ export default function SearchSpotify({ selectTrack }) {
           <Button
             className='w-50 mt-2'
             type='submit'
-            onClick={handleSubmit}
             disabled={!searchTerm}
+            onClick={handleSubmit}
           >
             Search
           </Button>

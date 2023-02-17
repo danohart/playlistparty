@@ -12,9 +12,9 @@ export default async function handler(req, res) {
     user_id: randomString,
     user_info: {
       username: username,
+      playlistId: playlistId,
+      isVip,
     },
-    playlistId: playlistId,
-    isVip,
   };
 
   try {
