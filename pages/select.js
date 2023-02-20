@@ -5,7 +5,6 @@ import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
 import SearchSpotify from "@/compontents/SearchSpotify";
 import PlaylistInfo from "@/compontents/PlaylistInfo";
-import addSongsMessage from "@/compontents/ResponseMessages";
 
 export default function Select({ username, roomNumber, spotifyPlaylist }) {
   const [playlistId, setPlaylistId] = useState(spotifyPlaylist);
@@ -15,7 +14,6 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
   ]);
   const [onlineUserCount, setOnlineUsersCount] = useState(0);
   const [messageToSend, setMessageToSend] = useState("");
-  const [message, setMessage] = useState(null);
 
   async function setPlaylistIdForRoom(playlistId) {
     await fetch("/api/pusher/playlist", {
@@ -45,16 +43,11 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
         setPlaylistIdForRoom(members.me.info.playlistId);
       }
     });
+
     // when a new member successfully subscribes to the channel
     channel.bind("pusher:subscription_succeeded", (members) => {
       // total subscribed
       setOnlineUsersCount(members.count);
-      // setOnlineUsers((prevState) => [
-      //   ...prevState,
-      //   {
-      //     username: members.me.username,
-      //   },
-      // ]);
     });
 
     // when a new member joins the chat
@@ -110,18 +103,6 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
     }).then(setMessageToSend(""));
   };
 
-  function addToPlaylist(songs) {
-    const songUri = "spotify:track:" + songs;
-
-    fetch("/api/add-to-playlist", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ uris: [songUri], playlistId }),
-    }).then((res) => setMessage(addSongsMessage("songs", res.status)));
-  }
-
   return (
     <>
       <Meta title={`Welcome ${username}!`} />
@@ -141,7 +122,7 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
         </Col>
 
         <Col xs={12} sm={12} md={12} lg={12}>
-          <SearchSpotify selectTrack={addToPlaylist} />
+          <SearchSpotify playlistId={playlistId} />
         </Col>
         <Col xs={12} sm={12} md={12} lg={12}>
           <Row>
@@ -178,15 +159,6 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
               Send
             </Button>
           </form>
-        </Col>
-      </Row>
-      <Row>
-        <Col xs={12} sm={12} md={12} lg={12}>
-          {message ? (
-            <Row>
-              <Col>{message}</Col>
-            </Row>
-          ) : null}
         </Col>
       </Row>
     </>

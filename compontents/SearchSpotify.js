@@ -1,13 +1,32 @@
 import React, { useState } from "react";
 import { FormControl, Button, Row, Col } from "react-bootstrap";
+import addSongsMessage from "./ResponseMessages";
 
-export default function SearchSpotify({ selectTrack }) {
+export default function SearchSpotify({ playlistId }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchData, setSearchData] = useState({ items: [] });
+  const [message, setMessage] = useState(null);
 
   async function handleSubmit() {
     await fetch(`/api/search?searchTerm=${searchTerm}`).then(async (res) =>
       setSearchData(await res.json())
+    );
+  }
+
+  function addToPlaylist(song) {
+    const songUri = "spotify:track:" + song;
+
+    fetch("/api/add-to-playlist", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ uris: [songUri], playlistId }),
+    }).then(
+      (res) => setMessage(addSongsMessage("songs", res.status)),
+      setSearchData({ items: [] }),
+      setSearchTerm(null),
+      setTimeout(setMessage(null), 3000)
     );
   }
 
@@ -51,7 +70,7 @@ export default function SearchSpotify({ selectTrack }) {
                       </div>
                       <Button
                         className='mt-2'
-                        onClick={() => selectTrack(result.id)}
+                        onClick={() => addToPlaylist(result.id)}
                       >
                         Add to playlist
                       </Button>
@@ -62,7 +81,13 @@ export default function SearchSpotify({ selectTrack }) {
             ))}
           </Col>
         </Row>
-      ) : null}
+      ) : (
+        <Row>
+          <Col>
+            <h2>{message}</h2>
+          </Col>
+        </Row>
+      )}
     </>
   );
 }
