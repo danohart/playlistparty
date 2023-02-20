@@ -10,20 +10,10 @@ export default function Home({
   handleLogin,
   handleLoginChange,
   handleRoomChange,
+  handlePlaylistChange,
 }) {
   const [playlistId, setPlaylistId] = useState("Select Playlist");
   const [joinGame, setJoinGame] = useState(false);
-
-  useEffect(() => {
-    if (localStorage.getItem("playlistId"))
-      setPlaylistId(localStorage.getItem("playlistId"));
-  }, []);
-
-  function playlistSelect(e) {
-    const selection = e.target.value;
-    setPlaylistId(selection);
-    localStorage.setItem("playlistId", selection);
-  }
 
   return (
     <>
@@ -32,7 +22,7 @@ export default function Home({
       {playlistId === "Select Playlist" ? (
         <>
           <h2>Create a new playlist</h2>
-          <CreatePlaylist playlistSelect={playlistSelect} />
+          <CreatePlaylist playlistSelect={handlePlaylistChange} />
         </>
       ) : (
         <>
@@ -40,7 +30,7 @@ export default function Home({
             <Col xs={12} sm={12} md={6} lg={6}>
               <h2>Playlist Selected</h2>
               <AllPlaylists
-                playlistSelect={playlistSelect}
+                playlistSelect={handlePlaylistChange}
                 playlistId={playlistId}
               />
             </Col>

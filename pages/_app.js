@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 export default function App({ Component, pageProps: { ...pageProps } }) {
   const [username, setUsername] = useState("");
   const [roomNumber, setRoomNumber] = useState("");
+  const [spotifyPlaylist, setSpotifyPlaylist] = useState(null);
   const router = useRouter();
 
   const handleLogin = () => {
@@ -15,11 +16,13 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
   return (
     <Layout>
       <Component
-        handleLoginChange={(e) => setUsername(e.target.value)}
-        handleLogin={handleLogin}
         username={username}
         roomNumber={roomNumber}
+        spotifyPlaylist={spotifyPlaylist}
+        handleLoginChange={(e) => setUsername(e.target.value)}
         handleRoomChange={(e) => setRoomNumber(e.target.value)}
+        handlePlaylistChange={(e) => setSpotifyPlaylist(e.target.value)}
+        handleLogin={handleLogin}
         {...pageProps}
       />
     </Layout>

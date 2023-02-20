@@ -6,8 +6,8 @@ import { siteTitle } from "@/lib/constants";
 import SearchSpotify from "@/compontents/SearchSpotify";
 import addSongsMessage from "@/compontents/ResponseMessages";
 
-export default function Select({ username, roomNumber }) {
-  const [playlistId, setPlaylistId] = useState(null);
+export default function Select({ username, roomNumber, spotifyPlaylist }) {
+  const [playlistId, setPlaylistId] = useState(spotifyPlaylist);
   const [chats, setChats] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState([
     { username: username + "(you)" },
@@ -15,13 +15,6 @@ export default function Select({ username, roomNumber }) {
   const [onlineUserCount, setOnlineUsersCount] = useState(0);
   const [messageToSend, setMessageToSend] = useState("");
   const [message, setMessage] = useState(null);
-
-  const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
-    // use jwts in prod
-    authEndpoint: `api/pusher/auth`,
-    auth: { params: { username, playlistId } },
-  });
 
   async function setPlaylistIdForRoom(playlistId) {
     await fetch("/api/pusher/playlist", {
@@ -32,6 +25,13 @@ export default function Select({ username, roomNumber }) {
       body: JSON.stringify({ playlistId, username, roomNumber }),
     });
   }
+
+  const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
+    // use jwts in prod
+    authEndpoint: `api/pusher/auth`,
+    auth: { params: { username, playlistId } },
+  });
 
   useEffect(() => {
     const channel = pusher.subscribe(`presence-playlist-shuffle-${roomNumber}`);

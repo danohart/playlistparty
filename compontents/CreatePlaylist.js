@@ -46,7 +46,7 @@ export default function CreatePlaylist(props) {
       <Row className='mt-2'>
         <Col>
           <Button
-            disabled={playlistName === ""}
+            disabled={playlistName === "" || message === "Playlist created!"}
             onClick={() => createPlaylist(playlistName)}
             size='lg'
           >
