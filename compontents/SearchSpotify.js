@@ -6,6 +6,7 @@ export default function SearchSpotify({ playlistId }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchData, setSearchData] = useState({ items: [] });
   const [message, setMessage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
     await fetch(`/api/search?searchTerm=${searchTerm}`).then(async (res) =>
@@ -15,7 +16,7 @@ export default function SearchSpotify({ playlistId }) {
 
   function addToPlaylist(song) {
     const songUri = "spotify:track:" + song;
-
+    setLoading(true);
     fetch("/api/add-to-playlist", {
       method: "POST",
       headers: {
@@ -28,6 +29,8 @@ export default function SearchSpotify({ playlistId }) {
       setSearchTerm(null),
       setTimeout(setMessage(null), 3000)
     );
+
+    setLoading(false);
   }
 
   return (
@@ -72,7 +75,13 @@ export default function SearchSpotify({ playlistId }) {
                         className='mt-2'
                         onClick={() => addToPlaylist(result.id)}
                       >
-                        Add to playlist
+                        {!loading ? (
+                          "Add to playlist"
+                        ) : (
+                          <Spinner animation='border' role='status'>
+                            <span className='visually-hidden'>Loading...</span>
+                          </Spinner>
+                        )}
                       </Button>
                     </Col>
                   </Row>
