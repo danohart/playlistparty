@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormControl, Button, Row, Col } from "react-bootstrap";
 import addSongsMessage from "./ResponseMessages";
 
-export default function SearchSpotify({ playlistId }) {
+export default function SearchSpotify({ playlistId, username, roomNumber }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchData, setSearchData] = useState({ items: [] });
   const [message, setMessage] = useState(null);
@@ -22,7 +22,12 @@ export default function SearchSpotify({ playlistId }) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ uris: [songUri], playlistId }),
+      body: JSON.stringify({
+        uris: [songUri],
+        playlistId,
+        username,
+        roomNumber,
+      }),
     }).then(
       (res) => setMessage(addSongsMessage("songs", res.status)),
       setSearchData({ items: [] }),

@@ -130,7 +130,11 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
         </Col>
 
         <Col xs={12} sm={12} md={12} lg={12}>
-          <SearchSpotify playlistId={playlistId} />
+          <SearchSpotify
+            playlistId={playlistId}
+            username={username}
+            roomNumber={roomNumber}
+          />
         </Col>
         <Col xs={12} sm={12} md={12} lg={12}>
           <Row>
