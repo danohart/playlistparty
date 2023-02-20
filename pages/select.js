@@ -10,6 +10,7 @@ import ChatMessage from "@/compontents/ChatMessage";
 export default function Select({ username, roomNumber, spotifyPlaylist }) {
   const [playlistId, setPlaylistId] = useState(spotifyPlaylist);
   const [chats, setChats] = useState([]);
+  const [toggleChat, setToggleChat] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([
     { username: username + "(you)" },
   ]);
@@ -106,7 +107,7 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
 
   return (
     <>
-      <ToastContainer position='top-end'>
+      <ToastContainer position='middle-end'>
         {chats.map((chat, id) => (
           <ChatMessage chat={chat} key={id} />
         ))}
@@ -135,10 +136,18 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
           <Row>
             <Col>
               <h2>Chat</h2>
+              <Button onClick={() => setToggleChat(!toggleChat)}>
+                Show Chat
+              </Button>
             </Col>
           </Row>
         </Col>
-        <Col>
+        <Col className={`chat-input ${toggleChat ? "d-none" : ""}`}>
+          <Row>
+            <Col className='d-flex justify-content-end mb-2'>
+              <Button onClick={() => setToggleChat(!toggleChat)}>X</Button>
+            </Col>
+          </Row>
           <form
             onSubmit={(e) => {
               handleSubmit(e);
@@ -146,12 +155,13 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
           >
             <FormControl
               type='text'
+              className='chat-field'
               value={messageToSend}
               onChange={(e) => setMessageToSend(e.target.value)}
               placeholder='start typing....'
             />
             <Button
-              className='w-50 mt-2'
+              className='chat-submit w-50 mt-2'
               type='submit'
               disabled={!messageToSend}
             >
