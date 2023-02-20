@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Row, Col, Button, FormControl } from "react-bootstrap";
+import { Row, Col, Button, FormControl, Spinner } from "react-bootstrap";
 import ResponseMessages from "@/compontents/ResponseMessages";
 
 export default function CreatePlaylist(props) {
   const [playlistName, setPlaylistName] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
     e.preventDefault;
@@ -13,7 +14,8 @@ export default function CreatePlaylist(props) {
     setPlaylistName(formData);
   }
 
-  function createPlaylist(playlistInfo) {
+  async function createPlaylist(playlistInfo) {
+    setLoading(true);
     fetch("/api/create-playlist", {
       method: "POST",
       headers: {
@@ -30,6 +32,7 @@ export default function CreatePlaylist(props) {
         props.playlistSelect({ target: { value: await res.json() } })
       )
     );
+    setLoading(false);
   }
 
   return (
@@ -50,7 +53,13 @@ export default function CreatePlaylist(props) {
             onClick={() => createPlaylist(playlistName)}
             size='lg'
           >
-            Create playlist
+            {!loading ? (
+              "Create playlist"
+            ) : (
+              <Spinner animation='border' role='status'>
+                <span className='visually-hidden'>Loading...</span>
+              </Spinner>
+            )}
           </Button>
         </Col>
       </Row>
