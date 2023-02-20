@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Pusher from "pusher-js";
-import { Row, Col, Button, FormControl } from "react-bootstrap";
+import { Row, Col, Button, FormControl, ToastContainer } from "react-bootstrap";
 import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
 import SearchSpotify from "@/compontents/SearchSpotify";
 import PlaylistInfo from "@/compontents/PlaylistInfo";
+import ChatMessage from "@/compontents/ChatMessage";
 
 export default function Select({ username, roomNumber, spotifyPlaylist }) {
   const [playlistId, setPlaylistId] = useState(spotifyPlaylist);
@@ -105,6 +106,12 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
 
   return (
     <>
+      <ToastContainer position='top-end'>
+        {chats.map((chat, id) => (
+          <ChatMessage chat={chat} key={id} />
+        ))}
+      </ToastContainer>
+
       <Meta title={`Welcome ${username}!`} />
       <h1>{siteTitle}</h1>
       <Row>
@@ -128,14 +135,6 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
           <Row>
             <Col>
               <h2>Chat</h2>
-              <Row className='chat'>
-                {chats.map((chat, id) => (
-                  <Col xs={12} sm={12} md={12} lg={12} key={id}>
-                    <div className='chat-message'>{chat.message}</div>
-                    <div className='chat-username'>{chat.username}</div>
-                  </Col>
-                ))}
-              </Row>
             </Col>
           </Row>
         </Col>
