@@ -4,6 +4,7 @@ import { Row, Col, Button, FormControl } from "react-bootstrap";
 import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
 import SearchSpotify from "@/compontents/SearchSpotify";
+import PlaylistInfo from "@/compontents/PlaylistInfo";
 import addSongsMessage from "@/compontents/ResponseMessages";
 
 export default function Select({ username, roomNumber, spotifyPlaylist }) {
@@ -128,6 +129,7 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
       <Row>
         <Col xs={12} sm={12} md={12} lg={12}>
           <div className='room-id'>{roomNumber}</div>
+          <PlaylistInfo playlistId={playlistId} />
           <h2>People in: {onlineUserCount}</h2>
           <div className='user-row'>
             {onlineUsers.map((user) => (

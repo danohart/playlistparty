@@ -4,9 +4,11 @@ import Layout from "@/compontents/Layout";
 import { useRouter } from "next/router";
 
 export default function App({ Component, pageProps: { ...pageProps } }) {
-  const [username, setUsername] = useState("");
-  const [roomNumber, setRoomNumber] = useState("");
+  const defaultRoom = Math.floor(Math.random() * 90000) + 10000;
+  const [username, setUsername] = useState(null);
+  const [roomNumber, setRoomNumber] = useState(defaultRoom);
   const [spotifyPlaylist, setSpotifyPlaylist] = useState(null);
+
   const router = useRouter();
 
   const handleLogin = () => {
