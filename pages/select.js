@@ -146,7 +146,7 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
             </Col>
           </Row>
         </Col>
-        <Col className={`chat-input ${toggleChat ? "d-none" : ""}`}>
+        <Col className={`chat-input ${!toggleChat ? "d-none" : ""}`}>
           <Row>
             <Col className='d-flex justify-content-end mb-2'>
               <Button onClick={() => setToggleChat(!toggleChat)}>X</Button>

@@ -18,7 +18,7 @@ export default function Home({
   return (
     <>
       <Meta />
-      <h1>{siteTitle}</h1>
+      <h1 className='logo'>{siteTitle}</h1>
       {!joinGame ? (
         <>
           {!spotifyPlaylist ? (
@@ -27,7 +27,11 @@ export default function Home({
               <CreatePlaylist playlistSelect={handlePlaylistChange} />
               <Row className='mt-4'>
                 <Col>
-                  <Button size='lg' onClick={() => setJoinGame(true)}>
+                  <Button
+                    size='lg'
+                    onClick={() => setJoinGame(true)}
+                    className='w-100'
+                  >
                     Join Room
                   </Button>
                 </Col>
@@ -46,6 +50,7 @@ export default function Home({
         </>
       ) : (
         <>
+          <Button onClick={() => setJoinGame(!joinGame)}>&larr; Go back</Button>
           <JoinRoom handleRoomChange={handleRoomChange} />
           <SetUsername
             handleLoginChange={handleLoginChange}

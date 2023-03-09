@@ -61,6 +61,7 @@ export default function CreatePlaylist(props) {
             placeholder='Name your new playlist'
             value={playlistName}
             onChange={handleChange}
+            className='playlist-field'
           />
         </Col>
       </Row>
