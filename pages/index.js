@@ -34,8 +34,9 @@ export default function Home({
               <h2>Create a new playlist</h2>
               <Row>
                 <Col className='mb-3'>
-                  To start, create a playlist first. If you're just joining an
-                  already existing playlist, click "Join Room" below.
+                  To start, create a playlist first. If you&apos;re just joining
+                  an already existing playlist, click &quot;Join Room&quot;
+                  below.
                 </Col>
               </Row>
               <CreatePlaylist playlistSelect={handlePlaylistChange} />
