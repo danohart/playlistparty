@@ -17,13 +17,27 @@ export default function Home({
 
   return (
     <>
-      <Meta />
+      <Meta description='BeatJumble is a social music challenge where you can test your knowledge and share your favorite tunes with friends.' />
       <h1 className='logo'>{siteTitle}</h1>
+      <Row>
+        <Col xs={12} lg={{ span: 8, offset: 2 }} className='mb-4 text-center'>
+          A music-based social challenge where players anonymously add songs to
+          a collaborative playlist, while other players have to guess who added
+          each song. Sharpen your music knowledge and compete to see who can
+          guess the most songs correctly.
+        </Col>
+      </Row>
       {!joinGame ? (
         <>
           {!spotifyPlaylist ? (
             <>
               <h2>Create a new playlist</h2>
+              <Row>
+                <Col className='mb-3'>
+                  To start, create a playlist first. If you're just joining an
+                  already existing playlist, click "Join Room" below.
+                </Col>
+              </Row>
               <CreatePlaylist playlistSelect={handlePlaylistChange} />
               <Row className='mt-4'>
                 <Col>
