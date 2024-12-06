@@ -10,7 +10,7 @@ import {
 import ResponseMessages from "@/compontents/ResponseMessages";
 
 export default function CreatePlaylist(props) {
-  const [playlistName, setPlaylistName] = useState();
+  const [playlistName, setPlaylistName] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -58,6 +58,7 @@ export default function CreatePlaylist(props) {
       <Row>
         <Col xs={12} sm={12} md={12} lg={12}>
           <FormControl
+            name='playlist-field'
             placeholder='Name your new playlist'
             value={playlistName}
             onChange={handleChange}
