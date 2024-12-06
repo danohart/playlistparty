@@ -120,8 +120,11 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
       <h1>{siteTitle}</h1>
       <Row>
         <Col xs={12} sm={12} md={12} lg={12}>
-          <div className='room-id'>{roomNumber}</div>
-          <PlaylistInfo playlistId={playlistId} />
+          <div className='room-id'>
+            <div className='room-id-title'>Room #</div>
+            {roomNumber}
+          </div>
+          {!playlistId ? "" : <PlaylistInfo playlistId={playlistId} />}
           <h2>People in: {onlineUserCount}</h2>
           <div className='user-row'>
             {onlineUsers.map((user) => (

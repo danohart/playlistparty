@@ -29,7 +29,7 @@ h1 {
     text-align: center;
 
     &.logo {
-        background: linear-gradient(45deg, $sunny-yellow, $punk-purple, $dark-purple, $blue);
+        background: linear-gradient(25deg, $sunny-yellow, $punk-purple, $dark-purple, $blue);
         background-clip: text;
         -webkit-text-fill-color: transparent;
         border-radius: 1px solid black;
@@ -96,6 +96,10 @@ h1 {
     font-size: 36px;
     text-align: center;
     box-shadow: 0px 0px 5px #00000026;
+
+    &-title {
+        font-size: 12px;
+    }
 }
 
 .user-row {
