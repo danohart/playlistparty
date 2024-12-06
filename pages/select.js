@@ -11,9 +11,7 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
   const [playlistId, setPlaylistId] = useState(spotifyPlaylist);
   const [chats, setChats] = useState([]);
   const [toggleChat, setToggleChat] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState([
-    { username: username + "(you)" },
-  ]);
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const [onlineUserCount, setOnlineUsersCount] = useState(0);
   const [messageToSend, setMessageToSend] = useState("");
 
@@ -50,6 +48,13 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
     channel.bind("pusher:subscription_succeeded", (members) => {
       // total subscribed
       setOnlineUsersCount(members.count);
+
+      channel.members.each(function (member) {
+        setOnlineUsers((prevState) => [
+          ...prevState,
+          { username: member.info.username },
+        ]);
+      });
     });
 
     // when a new member joins the chat
@@ -66,12 +71,10 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
     // when a member leaves the chat
     channel.bind("pusher:member_removed", (member) => {
       setOnlineUsersCount(channel.members.count);
-      setOnlineUsers((prevState) => [
-        ...prevState,
-        {
-          username: member.info.username,
-        },
-      ]);
+
+      setOnlineUsers((state) =>
+        state.filter((item) => item.username !== member.info.username)
+      );
     });
 
     // updates chats
