@@ -15,6 +15,7 @@ export default function SetUsername({
             className='mt-2'
             onChange={handleLoginChange}
             placeholder='Your name'
+            maxLength={10}
             required
           />
           <Button className='mt-2' size='lg' onClick={handleLogin}>
