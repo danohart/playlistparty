@@ -1,19 +1,51 @@
 import React, { useState, useEffect } from "react";
 import Pusher from "pusher-js";
-import { Row, Col, Button, FormControl, ToastContainer } from "react-bootstrap";
+import { useRouter } from "next/router";
+import {
+  Row,
+  Col,
+  Button,
+  FormControl,
+  ToastContainer,
+  Spinner,
+} from "react-bootstrap";
 import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
 import SearchSpotify from "@/compontents/SearchSpotify";
 import PlaylistInfo from "@/compontents/PlaylistInfo";
 import ChatMessage from "@/compontents/ChatMessage";
 
-export default function Select({ username, roomNumber, spotifyPlaylist }) {
+export default function Select({ username, room, spotifyPlaylist }) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
   const [playlistId, setPlaylistId] = useState(spotifyPlaylist);
+  const [user, setUser] = useState(username);
+  const [roomNumber, setRoomNumber] = useState(room);
   const [chats, setChats] = useState([]);
   const [toggleChat, setToggleChat] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [onlineUserCount, setOnlineUsersCount] = useState(0);
   const [messageToSend, setMessageToSend] = useState("");
+
+  useEffect(() => {
+    if (!user || !roomNumber) {
+      const storedUsername = window.localStorage.getItem("chatName");
+      const storedRoom = window.localStorage.getItem("roomNumber");
+      const storedPlaylistId = window.localStorage.getItem("playlistId");
+
+      if (!storedUsername || !storedRoom) {
+        router.push("/");
+        return;
+      }
+
+      setUser(JSON.parse(storedUsername));
+      setRoomNumber(JSON.parse(storedRoom));
+      if (storedPlaylistId) {
+        setPlaylistId(JSON.parse(storedPlaylistId));
+      }
+    }
+    setIsLoading(false);
+  }, [user, roomNumber]);
 
   async function setPlaylistIdForRoom(playlistId) {
     await fetch("/api/pusher/playlist", {
@@ -21,18 +53,19 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ playlistId, username, roomNumber }),
+      body: JSON.stringify({ playlistId, username: user, roomNumber }),
     });
   }
 
-  const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
-    // use jwts in prod
-    authEndpoint: `api/pusher/auth`,
-    auth: { params: { username, playlistId } },
-  });
-
   useEffect(() => {
+    if (!user) return;
+
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
+      authEndpoint: `api/pusher/auth`,
+      auth: { params: { username: user, playlistId } },
+    });
+
     const channel = pusher.subscribe(`presence-playlist-shuffle-${roomNumber}`);
     const playlistChannel = pusher.subscribe(
       `presence-cache-playlist-shuffle-${roomNumber}-playlist`
@@ -44,11 +77,9 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
       }
     });
 
-    // when a new member successfully subscribes to the channel
     channel.bind("pusher:subscription_succeeded", (members) => {
-      // total subscribed
       setOnlineUsersCount(members.count);
-
+      setOnlineUsers([]);
       channel.members.each(function (member) {
         setOnlineUsers((prevState) => [
           ...prevState,
@@ -57,7 +88,6 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
       });
     });
 
-    // when a new member joins the chat
     channel.bind("pusher:member_added", (member) => {
       setOnlineUsersCount(channel.members.count);
       setOnlineUsers((prevState) => [
@@ -68,24 +98,24 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
       ]);
     });
 
-    // when a member leaves the chat
     channel.bind("pusher:member_removed", (member) => {
       setOnlineUsersCount(channel.members.count);
-
       setOnlineUsers((state) =>
         state.filter((item) => item.username !== member.info.username)
       );
     });
 
-    // updates chats
     channel.bind("playlist-update", function (data) {
       const { username, message } = data;
       setChats((prevState) => [...prevState, { username, message }]);
     });
 
-    // updates playlistId
     playlistChannel.bind("playlist-id", function (data) {
       setPlaylistId(data.playlistId);
+      window.localStorage.setItem(
+        "playlistId",
+        JSON.stringify(data.playlistId)
+      );
     });
 
     return () => {
@@ -93,8 +123,9 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
       pusher.unsubscribe(
         `presence-cache-playlist-shuffle-${roomNumber}-playlist`
       );
+      pusher.disconnect();
     };
-  }, []);
+  }, [user, roomNumber, playlistId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -104,9 +135,26 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message: messageToSend, username, roomNumber }),
+      body: JSON.stringify({
+        message: messageToSend,
+        username: user,
+        roomNumber,
+      }),
     }).then(setMessageToSend(""));
   };
+
+  if (isLoading) {
+    return (
+      <div
+        className='d-flex justify-content-center align-items-center'
+        style={{ height: "100vh" }}
+      >
+        <Spinner animation='border' role='status'>
+          <span className='visually-hidden'>Loading...</span>
+        </Spinner>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -116,7 +164,7 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
         ))}
       </ToastContainer>
 
-      <Meta title={`Welcome ${username}!`} />
+      <Meta title={`Welcome ${user}!`} />
       <h1>{siteTitle}</h1>
       <Row>
         <Col xs={12} sm={12} md={12} lg={12}>
@@ -138,7 +186,7 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
         <Col xs={12} sm={12} md={12} lg={12}>
           <SearchSpotify
             playlistId={playlistId}
-            username={username}
+            username={user}
             roomNumber={roomNumber}
           />
         </Col>
@@ -158,11 +206,7 @@ export default function Select({ username, roomNumber, spotifyPlaylist }) {
               <Button onClick={() => setToggleChat(!toggleChat)}>X</Button>
             </Col>
           </Row>
-          <form
-            onSubmit={(e) => {
-              handleSubmit(e);
-            }}
-          >
+          <form onSubmit={handleSubmit}>
             <FormControl
               type='text'
               className='chat-field'
