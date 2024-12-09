@@ -158,7 +158,7 @@ export default function Select({ username, room, spotifyPlaylist }) {
 
   return (
     <>
-      <ToastContainer position='middle-end'>
+      <ToastContainer position='top-end'>
         {chats.map((chat, id) => (
           <ChatMessage chat={chat} key={id} />
         ))}
