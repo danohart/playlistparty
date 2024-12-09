@@ -17,7 +17,7 @@ export default function Home({
 
   return (
     <>
-      <Meta description='BeatJumble is a social music challenge where you can test your knowledge and share your favorite tunes with friends.' />
+      <Meta description='PlaylistParty is a social music challenge where you can test your knowledge and share your favorite tunes with friends.' />
       <h1 className='logo'>{siteTitle}</h1>
       <Row>
         <Col xs={12} lg={{ span: 8, offset: 2 }} className='mb-4 text-center'>
