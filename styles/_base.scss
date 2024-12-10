@@ -27,16 +27,15 @@ h1 {
     line-break: loose;
     font-weight: 800;
     text-align: center;
+    @include mobile {
+        font-size: 48px;
+    }
 
     &.logo {
         background: linear-gradient(25deg, $sunny-yellow, $punk-purple, $dark-purple, $blue);
         background-clip: text;
         -webkit-text-fill-color: transparent;
         border-radius: 1px solid black;
-
-        @include mobile {
-            font-size: 48px;
-        }
     }
 }
 

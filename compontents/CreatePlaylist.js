@@ -9,7 +9,7 @@ import {
 } from "unique-names-generator";
 import ResponseMessages from "@/compontents/ResponseMessages";
 
-export default function CreatePlaylist(props) {
+export default function CreatePlaylist({ handleJoinGame, playlistSelect }) {
   const [playlistName, setPlaylistName] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,7 +47,7 @@ export default function CreatePlaylist(props) {
     }).then(async (res) =>
       setMessage(
         ResponseMessages("playlist", res.status),
-        props.playlistSelect({ target: { value: await res.json() } })
+        playlistSelect({ target: { value: await res.json() } })
       )
     );
     setLoading(false);
@@ -55,6 +55,13 @@ export default function CreatePlaylist(props) {
 
   return (
     <>
+      <h2>Create a new playlist</h2>
+      <Row>
+        <Col className='mb-3'>
+          To start, create a playlist first. If you&apos;re just joining an
+          already existing playlist, click &quot;Join Room&quot; below.
+        </Col>
+      </Row>
       <Row>
         <Col xs={12} sm={12} md={12} lg={12}>
           <FormControl
@@ -89,6 +96,13 @@ export default function CreatePlaylist(props) {
             onClick={() => uniquePlaylistName()}
           >
             Make up a name
+          </Button>
+        </Col>
+      </Row>
+      <Row className='mt-4'>
+        <Col>
+          <Button size='lg' onClick={() => handleJoinGame()} className='w-100'>
+            Join Room
           </Button>
         </Col>
       </Row>

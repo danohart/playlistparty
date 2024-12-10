@@ -12,8 +12,100 @@ export default function Home({
   handleRoomChange,
   handlePlaylistChange,
   spotifyPlaylist,
+  clearSession,
 }) {
-  const [joinGame, setJoinGame] = useState(false);
+  const [gameChoice, setGameChoice] = useState(null); // null, 'create', or 'join'
+
+  const renderInitialChoice = () => (
+    <Row className='mt-4'>
+      <Col xs={12} md={6} className='text-center mb-3'>
+        <Button
+          size='lg'
+          className='w-75'
+          onClick={() => setGameChoice("create")}
+        >
+          Create New Room
+        </Button>
+      </Col>
+      <Col xs={12} md={6} className='text-center mb-3'>
+        <Button
+          size='lg'
+          variant='primary'
+          className='w-75'
+          onClick={() => setGameChoice("join")}
+        >
+          Join Existing Room
+        </Button>
+      </Col>
+    </Row>
+  );
+
+  const renderContent = () => {
+    if (!gameChoice) {
+      return renderInitialChoice();
+    }
+
+    if (gameChoice === "create") {
+      if (!spotifyPlaylist) {
+        return (
+          <>
+            <Button
+              variant='primary'
+              className='mb-3'
+              onClick={() => setGameChoice(null)}
+            >
+              ← Back to options
+            </Button>
+            <CreatePlaylist playlistSelect={handlePlaylistChange} />
+          </>
+        );
+      }
+      return (
+        <>
+          <h2>Playlist created!</h2>
+          <Button
+            variant='primary'
+            className='mb-3'
+            onClick={() => setGameChoice(null)}
+          >
+            ← Back to options
+          </Button>
+          <SetUsername
+            handleLoginChange={handleLoginChange}
+            handleLogin={handleLogin}
+            createRoom
+          />
+          <Button
+            variant='outline-primary'
+            className='mb-3'
+            onClick={() => clearSession()}
+          >
+            Start A New Room
+          </Button>
+        </>
+      );
+    }
+
+    if (gameChoice === "join") {
+      return (
+        <>
+          <Button
+            variant='primary'
+            className='mb-3'
+            onClick={() => setGameChoice(null)}
+          >
+            ← Back to options
+          </Button>
+          <h2>Join a room</h2>
+          <JoinRoom handleRoomChange={handleRoomChange} />
+          <SetUsername
+            handleLoginChange={handleLoginChange}
+            handleLogin={handleLogin}
+          />
+        </>
+      );
+    }
+  };
 
   return (
     <>
@@ -27,52 +119,7 @@ export default function Home({
           guess the most songs correctly.
         </Col>
       </Row>
-      {!joinGame ? (
-        <>
-          {!spotifyPlaylist ? (
-            <>
-              <h2>Create a new playlist</h2>
-              <Row>
-                <Col className='mb-3'>
-                  To start, create a playlist first. If you&apos;re just joining
-                  an already existing playlist, click &quot;Join Room&quot;
-                  below.
-                </Col>
-              </Row>
-              <CreatePlaylist playlistSelect={handlePlaylistChange} />
-              <Row className='mt-4'>
-                <Col>
-                  <Button
-                    size='lg'
-                    onClick={() => setJoinGame(true)}
-                    className='w-100'
-                  >
-                    Join Room
-                  </Button>
-                </Col>
-              </Row>
-            </>
-          ) : (
-            <>
-              <h2>Playlist created!</h2>
-              <SetUsername
-                handleLoginChange={handleLoginChange}
-                handleLogin={handleLogin}
-                createRoom
-              />
-            </>
-          )}
-        </>
-      ) : (
-        <>
-          <Button onClick={() => setJoinGame(!joinGame)}>&larr; Go back</Button>
-          <JoinRoom handleRoomChange={handleRoomChange} />
-          <SetUsername
-            handleLoginChange={handleLoginChange}
-            handleLogin={handleLogin}
-          />
-        </>
-      )}
+      {renderContent()}
     </>
   );
 }
