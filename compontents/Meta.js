@@ -13,6 +13,11 @@ export default function Meta(props) {
       <meta name='description' content={metaDescription} />
       <meta name='viewport' content='width=device-width, initial-scale=1' />
       <link rel='icon' href='/favicon.ico' />
+      <script
+        async
+        src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3886685281037161'
+        crossorigin='anonymous'
+      ></script>
     </Head>
   );
 }
