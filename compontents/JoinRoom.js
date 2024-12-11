@@ -5,7 +5,7 @@ export default function JoinRoom({ handleRoomChange }) {
     <>
       <Row className='mt-2'>
         <Col>
-          <h2>Room Code</h2>
+          <h4>Room Code</h4>
           <FormControl
             type='text'
             placeholder={"Five digit code"}

@@ -56,6 +56,7 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
     window.localStorage.removeItem("roomNumber");
     window.localStorage.removeItem("chatName");
     window.localStorage.removeItem("spotifyPlaylist");
+    window.localStorage.removeItem("playlistId");
     setRoomNumber(null);
     setUsername(null);
     setSpotifyPlaylist(null);

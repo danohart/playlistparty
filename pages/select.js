@@ -14,8 +14,15 @@ import { siteTitle } from "@/lib/constants";
 import SearchSpotify from "@/compontents/SearchSpotify";
 import PlaylistInfo from "@/compontents/PlaylistInfo";
 import ChatMessage from "@/compontents/ChatMessage";
+import Link from "next/link";
+import Emojis from "@/lib/emojis";
 
-export default function Select({ username, room, spotifyPlaylist }) {
+export default function Select({
+  username,
+  room,
+  spotifyPlaylist,
+  clearSession,
+}) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [playlistId, setPlaylistId] = useState(spotifyPlaylist);
@@ -83,7 +90,7 @@ export default function Select({ username, room, spotifyPlaylist }) {
       channel.members.each(function (member) {
         setOnlineUsers((prevState) => [
           ...prevState,
-          { username: member.info.username },
+          { username: member.info.username, icon: member.info.emoji },
         ]);
       });
     });
@@ -92,9 +99,7 @@ export default function Select({ username, room, spotifyPlaylist }) {
       setOnlineUsersCount(channel.members.count);
       setOnlineUsers((prevState) => [
         ...prevState,
-        {
-          username: member.info.username,
-        },
+        { username: member.info.username, icon: member.info.emoji },
       ]);
     });
 
@@ -165,18 +170,52 @@ export default function Select({ username, room, spotifyPlaylist }) {
       </ToastContainer>
 
       <Meta title={`Welcome ${user}!`} />
-      <h1>{siteTitle}</h1>
+      <h1>
+        <Link href='/'>{siteTitle}</Link>
+      </h1>
       <Row>
         <Col xs={12} sm={12} md={12} lg={12}>
-          <div className='room-id'>
-            <div className='room-id-title'>Room #</div>
-            {roomNumber}
-          </div>
+          <Row>
+            <Col
+              xs={{ span: 8, offset: 2 }}
+              sm={{ span: 8, offset: 2 }}
+              md={{ span: 8, offset: 2 }}
+              lg={{ span: 8, offset: 2 }}
+              className='mb-2'
+            >
+              <div className='room-id'>
+                <div className='room-id-title'>Room #</div>
+                {roomNumber}
+              </div>
+            </Col>
+          </Row>
+          <Row>
+            <Col
+              xs={{ span: 6, offset: 3 }}
+              sm={{ span: 6, offset: 3 }}
+              md={{ span: 6, offset: 3 }}
+              lg={{ span: 6, offset: 3 }}
+            >
+              <Button
+                variant='dark'
+                size='sm'
+                className='w-100'
+                onClick={() => {
+                  clearSession();
+                  router.push("/");
+                }}
+              >
+                Leave Room
+              </Button>
+            </Col>
+          </Row>
+
           {!playlistId ? "" : <PlaylistInfo playlistId={playlistId} />}
-          <h2>People in: {onlineUserCount}</h2>
+          <div className='text-center'>People in: {onlineUserCount}</div>
           <div className='user-row'>
             {onlineUsers.map((user) => (
               <div className='user-id' key={user.username}>
+                <div className='user-emoji'>{user.icon}</div>
                 {user.username}
               </div>
             ))}

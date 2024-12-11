@@ -14,97 +14,11 @@ export default function Home({
   spotifyPlaylist,
   clearSession,
 }) {
-  const [gameChoice, setGameChoice] = useState(null); // null, 'create', or 'join'
+  const [gameChoice, setGameChoice] = useState(null);
 
-  const renderInitialChoice = () => (
-    <Row className='mt-4'>
-      <Col xs={12} md={6} className='text-center mb-3'>
-        <Button
-          size='lg'
-          className='w-75'
-          onClick={() => setGameChoice("create")}
-        >
-          Create New Room
-        </Button>
-      </Col>
-      <Col xs={12} md={6} className='text-center mb-3'>
-        <Button
-          size='lg'
-          variant='primary'
-          className='w-75'
-          onClick={() => setGameChoice("join")}
-        >
-          Join Existing Room
-        </Button>
-      </Col>
-    </Row>
-  );
-
-  const renderContent = () => {
-    if (!gameChoice) {
-      return renderInitialChoice();
-    }
-
-    if (gameChoice === "create") {
-      if (!spotifyPlaylist) {
-        return (
-          <>
-            <Button
-              variant='primary'
-              className='mb-3'
-              onClick={() => setGameChoice(null)}
-            >
-              ← Back to options
-            </Button>
-            <CreatePlaylist playlistSelect={handlePlaylistChange} />
-          </>
-        );
-      }
-      return (
-        <>
-          <h2>Playlist created!</h2>
-          <Button
-            variant='primary'
-            className='mb-3'
-            onClick={() => setGameChoice(null)}
-          >
-            ← Back to options
-          </Button>
-          <SetUsername
-            handleLoginChange={handleLoginChange}
-            handleLogin={handleLogin}
-            createRoom
-          />
-          <Button
-            variant='outline-primary'
-            className='mb-3'
-            onClick={() => clearSession()}
-          >
-            Start A New Room
-          </Button>
-        </>
-      );
-    }
-
-    if (gameChoice === "join") {
-      return (
-        <>
-          <Button
-            variant='primary'
-            className='mb-3'
-            onClick={() => setGameChoice(null)}
-          >
-            ← Back to options
-          </Button>
-          <h2>Join a room</h2>
-          <JoinRoom handleRoomChange={handleRoomChange} />
-          <SetUsername
-            handleLoginChange={handleLoginChange}
-            handleLogin={handleLogin}
-          />
-        </>
-      );
-    }
+  const handleJoinChoice = () => {
+    clearSession();
+    setGameChoice("join");
   };
 
   return (
@@ -119,7 +33,72 @@ export default function Home({
           guess the most songs correctly.
         </Col>
       </Row>
-      {renderContent()}
+      {!gameChoice ? (
+        <Row className='mt-4'>
+          <Col xs={12} md={6} className='text-center mb-3'>
+            <Button
+              size='lg'
+              className='w-75'
+              onClick={() => setGameChoice("create")}
+            >
+              Create New Room
+            </Button>
+          </Col>
+          <Col xs={12} md={6} className='text-center mb-3'>
+            <Button
+              size='lg'
+              variant='primary'
+              className='w-75'
+              onClick={handleJoinChoice}
+            >
+              Join Existing Room
+            </Button>
+          </Col>
+        </Row>
+      ) : gameChoice === "create" ? (
+        <>
+          {!spotifyPlaylist ? (
+            <>
+              <Button
+                variant='primary'
+                className='mb-3'
+                onClick={() => setGameChoice(null)}
+              >
+                ← Back
+              </Button>
+              <CreatePlaylist playlistSelect={handlePlaylistChange} />
+            </>
+          ) : (
+            <>
+              <h2>Playlist created!</h2>
+              <SetUsername
+                handleLoginChange={handleLoginChange}
+                handleLogin={handleLogin}
+                createRoom
+              />
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          <Button
+            variant='primary'
+            className='mb-3'
+            onClick={() => {
+              clearSession();
+              setGameChoice(null);
+            }}
+          >
+            ← Back
+          </Button>
+          <h2>Join a room</h2>
+          <JoinRoom handleRoomChange={handleRoomChange} />
+          <SetUsername
+            handleLoginChange={handleLoginChange}
+            handleLogin={handleLogin}
+          />
+        </>
+      )}
     </>
   );
 }

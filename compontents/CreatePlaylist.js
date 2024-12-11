@@ -4,6 +4,7 @@ import {
   uniqueNamesGenerator,
   Config,
   adjectives,
+  names,
   colors,
   animals,
 } from "unique-names-generator";
@@ -16,9 +17,10 @@ export default function CreatePlaylist({ handleJoinGame, playlistSelect }) {
 
   function uniquePlaylistName() {
     const uniqueNameConfig = {
-      dictionaries: [adjectives, colors, animals],
+      dictionaries: [adjectives, names],
       separator: "-",
-      length: 3,
+      style: "capital",
+      length: 2,
     };
     const uniqueName = uniqueNamesGenerator(uniqueNameConfig);
 
@@ -59,7 +61,7 @@ export default function CreatePlaylist({ handleJoinGame, playlistSelect }) {
       <Row>
         <Col className='mb-3'>
           To start, create a playlist first. If you&apos;re just joining an
-          already existing playlist, click &quot;Join Room&quot; below.
+          already existing playlist, click &quot;Back&quot; above.
         </Col>
       </Row>
       <Row>
@@ -92,17 +94,10 @@ export default function CreatePlaylist({ handleJoinGame, playlistSelect }) {
           <Button
             className='ms-2 mt-2'
             size='md'
-            variant='outline-primary'
+            variant='secondary'
             onClick={() => uniquePlaylistName()}
           >
             Make up a name
-          </Button>
-        </Col>
-      </Row>
-      <Row className='mt-4'>
-        <Col>
-          <Button size='lg' onClick={() => handleJoinGame()} className='w-100'>
-            Join Room
           </Button>
         </Col>
       </Row>

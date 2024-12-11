@@ -21,12 +21,14 @@ export default function GetPlaylist({ playlistId }) {
     <>
       <Row>
         <Col
-          xs={{ span: 6, offset: 3 }}
-          sm={{ span: 6, offset: 3 }}
-          md={{ span: 6, offset: 3 }}
-          lg={{ span: 6, offset: 3 }}
+          xs={{ span: 10, offset: 1 }}
+          sm={{ span: 10, offset: 1 }}
+          md={{ span: 10, offset: 1 }}
+          lg={{ span: 10, offset: 1 }}
         >
-          <h3 className='text-center'>Playlist: {data.name}</h3>
+          <Row>
+            <Col className='text-center mt-2 mb-2'>Playlist: {data.name}</Col>
+          </Row>
           <a href={data.uri} target='_blank'>
             <Button className='w-100'>Play Songs</Button>
           </a>

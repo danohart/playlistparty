@@ -9,7 +9,7 @@ export default function SetUsername({
     <>
       <Row className='mt-2'>
         <Col>
-          <h2>Pick a name</h2>
+          <h4>Pick a name</h4>
           <FormControl
             type='text'
             className='mt-2'
