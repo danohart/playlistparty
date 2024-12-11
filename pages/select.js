@@ -15,7 +15,6 @@ import SearchSpotify from "@/compontents/SearchSpotify";
 import PlaylistInfo from "@/compontents/PlaylistInfo";
 import ChatMessage from "@/compontents/ChatMessage";
 import Link from "next/link";
-import Emojis from "@/lib/emojis";
 
 export default function Select({
   username,
