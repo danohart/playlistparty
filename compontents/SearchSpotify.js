@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FormControl, Button, Row, Col } from "react-bootstrap";
+import { FormControl, Button, Row, Col, Spinner } from "react-bootstrap";
 import addSongsMessage from "./ResponseMessages";
 
 export default function SearchSpotify({ playlistId, username, roomNumber }) {
@@ -24,18 +24,24 @@ export default function SearchSpotify({ playlistId, username, roomNumber }) {
       },
       body: JSON.stringify({
         uris: [songUri],
+        trackId: song,
         playlistId,
         username,
         roomNumber,
       }),
-    }).then(
-      (res) => setMessage(addSongsMessage("songs", res.status)),
-      setSearchData({ items: [] }),
-      setSearchTerm(null),
-      setTimeout(setMessage(null), 3000)
-    );
-
-    setLoading(false);
+    })
+      .then((res) => {
+        setMessage(addSongsMessage("songs", res.status));
+        setSearchData({ items: [] });
+        setSearchTerm(null);
+        setTimeout(() => setMessage(null), 3000);
+      })
+      .catch((error) => {
+        console.error("Error adding song:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   return (

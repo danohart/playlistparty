@@ -15,6 +15,7 @@ import SearchSpotify from "@/compontents/SearchSpotify";
 import PlaylistInfo from "@/compontents/PlaylistInfo";
 import ChatMessage from "@/compontents/ChatMessage";
 import Link from "next/link";
+import PlaylistReveal from "@/compontents/PlaylistReveal";
 
 export default function Select({
   username,
@@ -110,7 +111,21 @@ export default function Select({
     });
 
     channel.bind("playlist-update", function (data) {
-      const { username, message } = data;
+      const { username, message, type, trackId } = data;
+
+      if (type === "add") {
+        // Store the song addition in localStorage to persist who added each song
+        const existingAdders = JSON.parse(
+          localStorage.getItem(`songAdders-${roomNumber}`) || "[]"
+        );
+        const addersMap = new Map(existingAdders);
+        addersMap.set(trackId, username);
+        localStorage.setItem(
+          `songAdders-${roomNumber}`,
+          JSON.stringify([...addersMap])
+        );
+      }
+
       setChats((prevState) => [...prevState, { username, message }]);
     });
 
@@ -238,6 +253,13 @@ export default function Select({
             </Col>
           </Row>
         </Col>
+        {playlistId && (
+          <PlaylistReveal
+            playlistId={playlistId}
+            username={user}
+            roomNumber={roomNumber}
+          />
+        )}
         <Col className={`chat-input ${!toggleChat ? "d-none" : ""}`}>
           <Row>
             <Col className='d-flex justify-content-end mb-2'>
