@@ -18,7 +18,7 @@ import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
 import SearchSpotify from "@/compontents/SearchSpotify";
 import PlaylistInfo from "@/compontents/PlaylistInfo";
-import ChatMessage from "@/compontents/ChatMessage";
+import ChatNotifications from "@/compontents/ChatMessage";
 import Link from "next/link";
 
 const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
@@ -112,7 +112,10 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
 
     channel.bind("playlist-update", function (data) {
       const { username, message } = data;
-      setChats((prevState) => [...prevState, { username, message }]);
+      setChats((prevState) => [
+        ...prevState,
+        { username, message, id: Date.now() },
+      ]);
     });
 
     playlistChannel.bind("playlist-id", function (data) {
@@ -162,17 +165,15 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
 
   return (
     <div className='vaporwave-page'>
-      {!showChat ? (
-        <ToastContainer position='top-end' className='position-fixed'>
-          {chats.map((chat, id) => (
-            <ChatMessage chat={chat} key={id} />
-          ))}
-        </ToastContainer>
-      ) : null}
+      <ToastContainer position='top-end' className='position-fixed'>
+        {chats.map((chat, id) => (
+          <ChatNotifications chats={chat} showChat={showChat} key={id} />
+        ))}
+      </ToastContainer>
 
       <Meta title={`Welcome ${user}!`} />
 
-      <Row className='mb-4 pt-4'>
+      <Row className='mb-1 pt-1'>
         <Col
           xs={12}
           className='d-flex justify-content-center align-items-center'

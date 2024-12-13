@@ -34,7 +34,7 @@ export default function Home({
       </Row>
       {!gameChoice ? (
         <>
-          <Row className='mt-4'>
+          <Row className='my-4'>
             <Col xs={12} md={6} className='text-center mb-3'>
               <Button
                 size='lg'
