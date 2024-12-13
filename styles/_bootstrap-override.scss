@@ -1,7 +1,33 @@
-$primary: $punk-purple;
-$secondary: $dark-purple;
-$info: $blue;
+// Primary color assignments
+$primary: $primary;      
+$secondary: $secondary;  
+$info: $accent;          
+$success: $success;      
+$danger: $danger;        
+$warning: $warning;      
 
+// Bootstrap specific overrides
+$body-bg: $text-light;   // Light background #F5F7FA
+$body-color: $text-dark; // Dark text #2C3E50
+$link-color: $primary;   // Link color
+$border-radius: 0.5rem;  // Slightly more rounded corners
+
+// Container spacing
 .container {
     padding-top: calc(var(--bs-gutter-x) * 0.5);
+}
+
+// Optional: Button hover states
+.btn-primary {
+    &:hover {
+        background-color: darken($primary, 10%);
+        border-color: darken($primary, 10%);
+    }
+}
+
+.btn-secondary {
+    &:hover {
+        background-color: darken($secondary, 10%);
+        border-color: darken($secondary, 10%);
+    }
 }

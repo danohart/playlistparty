@@ -104,7 +104,7 @@ export default function SearchSpotify({ playlistId, username, roomNumber }) {
       ) : (
         <Row>
           <Col>
-            <h2>{message}</h2>
+            <p>{message}</p>
           </Col>
         </Row>
       )}

@@ -20,3 +20,11 @@ $desktop-width: 1024px;
     @content;
   }
 }
+
+@mixin gradient-background {
+  background: linear-gradient(135deg, $punk-purple 0%, $retro-pink 100%);
+}
+
+@mixin card-shadow {
+  box-shadow: 0 4px 15px rgba($retro-pink, 0.3);
+}

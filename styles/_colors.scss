@@ -1,12 +1,23 @@
-$retro-pink: #f92596;
-$punk-purple: #b90bb8;
-$dark-purple: #361b8e;
-$blue: #156ac5;
-$green: #0FAEBF;
-$sunset-orange: #fc4c06;
-$sunny-yellow: #ffde1c;
-$black: #000000;
-$white: #ffffff;
+$primary: #5ED566;   
+$secondary: #004927; 
+$accent: #EE7120;    
+$text-dark: #002C27; 
+$text-light: #F8F9FA;
+$success: #4CAF50;   
+$danger: #F94144;    
+$warning: #FBA937;   
+$background: #002C27;
+
+
+$retro-pink: $accent;
+$punk-purple: $primary;
+$dark-purple: $secondary;
+$blue: $primary;
+$green: $success;
+$sunset-orange: $danger;
+$sunny-yellow: $warning;
+$black: $text-dark;
+$white: $text-light;
 
 $all-colors: (
     $retro-pink,
@@ -15,5 +26,5 @@ $all-colors: (
     $blue,
     $green,
     $sunset-orange,
-    $sunny-yellow,
-)
+    $sunny-yellow
+);

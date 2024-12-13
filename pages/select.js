@@ -8,31 +8,32 @@ import {
   FormControl,
   ToastContainer,
   Spinner,
+  Card,
+  Badge,
+  Tab,
+  Tabs,
+  Offcanvas,
 } from "react-bootstrap";
 import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
 import SearchSpotify from "@/compontents/SearchSpotify";
 import PlaylistInfo from "@/compontents/PlaylistInfo";
-import ChatMessage from "@/compontents/ChatMessage";
+import ChatNotifications from "@/compontents/ChatMessage";
 import Link from "next/link";
 import PlaylistReveal from "@/compontents/PlaylistReveal";
 
-export default function Select({
-  username,
-  room,
-  spotifyPlaylist,
-  clearSession,
-}) {
+const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [playlistId, setPlaylistId] = useState(spotifyPlaylist);
   const [user, setUser] = useState(username);
   const [roomNumber, setRoomNumber] = useState(room);
   const [chats, setChats] = useState([]);
-  const [toggleChat, setToggleChat] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [onlineUserCount, setOnlineUsersCount] = useState(0);
   const [messageToSend, setMessageToSend] = useState("");
+  const [activeTab, setActiveTab] = useState("search");
 
   useEffect(() => {
     if (!user || !roomNumber) {
@@ -148,6 +149,7 @@ export default function Select({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!messageToSend.trim()) return;
 
     await fetch("/api/pusher/update", {
       method: "POST",
@@ -159,131 +161,191 @@ export default function Select({
         username: user,
         roomNumber,
       }),
-    }).then(setMessageToSend(""));
+    });
+    setMessageToSend("");
   };
 
   if (isLoading) {
     return (
-      <div
-        className='d-flex justify-content-center align-items-center'
-        style={{ height: "100vh" }}
-      >
+      <Row className='d-flex justify-content-center align-items-center min-vh-100'>
         <Spinner animation='border' role='status'>
           <span className='visually-hidden'>Loading...</span>
         </Spinner>
-      </div>
+      </Row>
     );
   }
 
   return (
-    <>
-      <ToastContainer position='top-end'>
+    <div className='vaporwave-page'>
+      <ToastContainer position='top-end' className='position-fixed'>
         {chats.map((chat, id) => (
-          <ChatMessage chat={chat} key={id} />
+          <ChatNotifications chats={chat} showChat={showChat} key={id} />
         ))}
       </ToastContainer>
 
       <Meta title={`Welcome ${user}!`} />
-      <h1>
-        <Link href='/'>{siteTitle}</Link>
-      </h1>
+
+      <Row className='mb-1 pt-1'>
+        <Col
+          xs={12}
+          className='d-flex justify-content-center align-items-center'
+        >
+          <h1>
+            <Link href='/'>{siteTitle}</Link>
+          </h1>
+        </Col>
+      </Row>
       <Row>
-        <Col xs={12} sm={12} md={12} lg={12}>
-          <Row>
-            <Col
-              xs={{ span: 8, offset: 2 }}
-              sm={{ span: 8, offset: 2 }}
-              md={{ span: 8, offset: 2 }}
-              lg={{ span: 8, offset: 2 }}
-              className='mb-2'
-            >
-              <div className='room-id'>
-                <div className='room-id-title'>Room #</div>
-                {roomNumber}
-              </div>
+        <Col className='text-center'>
+          <Button
+            variant='danger'
+            size='sm'
+            className='vaporwave-btn-danger mb-2'
+            onClick={() => {
+              clearSession();
+              router.push("/");
+            }}
+          >
+            Leave Room
+          </Button>
+        </Col>
+      </Row>
+
+      <Card className='main-card mb-4'>
+        <Card.Body>
+          <Row className='align-items-center'>
+            <Col xs={12} md={4} className='text-center text-md-start'>
+              <h5 className='room-heading'>Room #{roomNumber}</h5>
             </Col>
-          </Row>
-          <Row>
+            <Col xs={12} md={4} className='text-center'>
+              <Badge className='online-count-badge'>
+                {onlineUserCount} Online
+              </Badge>
+            </Col>
             <Col
-              xs={{ span: 6, offset: 3 }}
-              sm={{ span: 6, offset: 3 }}
-              md={{ span: 6, offset: 3 }}
-              lg={{ span: 6, offset: 3 }}
+              xs={12}
+              md={4}
+              className='text-center text-md-end mt-3 mt-md-0'
             >
               <Button
-                variant='dark'
-                size='sm'
-                className='w-100'
-                onClick={() => {
-                  clearSession();
-                  router.push("/");
-                }}
+                variant='secondary'
+                size='lg'
+                onClick={() => setShowChat(true)}
               >
-                Leave Room
+                Open Chat
               </Button>
             </Col>
           </Row>
 
-          {!playlistId ? "" : <PlaylistInfo playlistId={playlistId} />}
-          <div className='text-center'>People in: {onlineUserCount}</div>
-          <div className='user-row'>
-            {onlineUsers.map((user) => (
-              <div className='user-id' key={user.username}>
-                <div className='user-emoji'>{user.icon}</div>
-                {user.username}
+          <div className='mt-3'>
+            <div className='d-flex flex-wrap gap-2 justify-content-center'>
+              {onlineUsers.map((user) => (
+                <Badge key={user.username} className='user-badge'>
+                  <span className='emoji-icon'>{user.icon}</span>
+                  {user.username}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </Card.Body>
+      </Card>
+
+      <div className='content-tabs'>
+        <Tabs
+          activeKey={activeTab}
+          onSelect={(k) => setActiveTab(k)}
+          className='mb-4'
+        >
+          <Tab eventKey='playlist' title='Playlist'>
+            {playlistId && <PlaylistInfo playlistId={playlistId} />}
+          </Tab>
+          <Tab eventKey='search' title='Add Songs'>
+            <SearchSpotify
+              playlistId={playlistId}
+              username={user}
+              roomNumber={roomNumber}
+            />
+          </Tab>
+        </Tabs>
+      </div>
+
+      <Offcanvas
+        show={showChat}
+        onHide={() => setShowChat(false)}
+        placement='end'
+        className='chat-sidebar'
+      >
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Chat</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          <div className='chat-messages'>
+            {chats.map((chat, index) => (
+              <div
+                key={index}
+                className={`message ${
+                  chat.username === user ? "message-sent" : "message-received"
+                }`}
+              >
+                <div className='username'>{chat.username}</div>
+                <div>{chat.message}</div>
               </div>
             ))}
           </div>
-        </Col>
 
-        <Col xs={12} sm={12} md={12} lg={12}>
-          <SearchSpotify
-            playlistId={playlistId}
-            username={user}
-            roomNumber={roomNumber}
-          />
-        </Col>
-        <Col xs={12} sm={12} md={12} lg={12}>
-          <Row>
-            <Col>
-              <h2>Chat</h2>
-              <Button onClick={() => setToggleChat(!toggleChat)}>
-                Show Chat
+          <form onSubmit={handleSubmit} className='chat-input w-100'>
+            <div className='d-flex gap-2'>
+              <FormControl
+                type='text'
+                value={messageToSend}
+                onChange={(e) => setMessageToSend(e.target.value)}
+                placeholder='Type a message...'
+                className='flex-grow-1'
+              />
+              <Button
+                type='submit'
+                disabled={!messageToSend.trim()}
+                className='vaporwave-btn-primary'
+              >
+                Send
               </Button>
-            </Col>
-          </Row>
-        </Col>
-        {playlistId && (
-          <PlaylistReveal
-            playlistId={playlistId}
-            username={user}
-            roomNumber={roomNumber}
-          />
-        )}
-        <Col className={`chat-input ${!toggleChat ? "d-none" : ""}`}>
-          <Row>
-            <Col className='d-flex justify-content-end mb-2'>
-              <Button onClick={() => setToggleChat(!toggleChat)}>X</Button>
-            </Col>
-          </Row>
-          <form onSubmit={handleSubmit}>
-            <FormControl
-              type='text'
-              className='chat-field'
-              value={messageToSend}
-              onChange={(e) => setMessageToSend(e.target.value)}
-              placeholder='start typing....'
-            />
-            <Button
-              className='chat-submit w-50 mt-2'
-              type='submit'
-              disabled={!messageToSend}
-            >
-              Send
-            </Button>
+            </div>
           </form>
-        </Col>
-      </Row>
-    </>
+
+          {playlistId && (
+            <PlaylistReveal
+              playlistId={playlistId}
+              username={user}
+              roomNumber={roomNumber}
+            />
+          )}
+          <Col className={`chat-input ${!toggleChat ? "d-none" : ""}`}>
+            <Row>
+              <Col className='d-flex justify-content-end mb-2'>
+                <Button onClick={() => setToggleChat(!toggleChat)}>X</Button>
+              </Col>
+            </Row>
+            <form onSubmit={handleSubmit}>
+              <FormControl
+                type='text'
+                className='chat-field'
+                value={messageToSend}
+                onChange={(e) => setMessageToSend(e.target.value)}
+                placeholder='start typing....'
+              />
+              <Button
+                className='chat-submit w-50 mt-2'
+                type='submit'
+                disabled={!messageToSend}
+              >
+                Send
+              </Button>
+            </form>
+          </Col>
+        </Offcanvas.Body>
+      </Offcanvas>
+    </div>
   );
-}
+};
+
+export default Select;
