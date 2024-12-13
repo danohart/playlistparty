@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "react-bootstrap";
+import { Row, Col, Button } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import CardGroup from "react-bootstrap/CardGroup";
 import useSWR from "swr";
@@ -10,6 +10,7 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
   const [tracks, setTracks] = useState([]);
   const [revealedTracks, setRevealedTracks] = useState(new Map());
   const [songAdders, setSongAdders] = useState(new Map());
+  const [recentReveal, setRecentReveal] = useState(null);
 
   const { data, error } = useSWR(
     playlistId ? `/api/get-playlist?playlistId=${playlistId}` : null,
@@ -46,6 +47,7 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
     }
   }, [songAdders, revealedTracks, roomNumber]);
 
+  // Setup Pusher subscription
   useEffect(() => {
     if (!username || !roomNumber) return;
 
@@ -58,18 +60,13 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
     const channel = pusher.subscribe(`presence-playlist-shuffle-${roomNumber}`);
 
     channel.bind("playlist-update", (data) => {
-      console.log("Received Pusher event:", data); // Debug log
-
       if (data.type === "add") {
-        console.log("Adding song:", data.trackId, "by user:", data.username); // Debug log
         setSongAdders((prev) => {
           const newMap = new Map(prev);
           newMap.set(data.trackId, data.username);
-          console.log("Updated songAdders:", [...newMap]); // Debug log
           return newMap;
         });
       } else if (data.type === "reveal") {
-        console.log("Revealing song:", data.trackId, "adder:", data.adder); // Debug log
         setRevealedTracks(
           (prev) => new Map(prev.set(data.trackId, data.adder))
         );
@@ -83,6 +80,7 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
     };
   }, [username, roomNumber]);
 
+  // Update tracks when data changes
   useEffect(() => {
     if (data?.tracks?.items) {
       setTracks(
@@ -106,60 +104,155 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
       return;
     }
 
-    setRevealedTracks(new Map(revealedTracks.set(trackId, adder)));
+    // Set the recent reveal to trigger animation
+    setRecentReveal({ trackId, adder });
 
-    await fetch("/api/pusher/update", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: `${username} revealed who added "${
-          tracks.find((t) => t.id === trackId)?.title
-        }"`,
-        username,
-        roomNumber,
-        trackId,
-        adder,
-        type: "reveal",
-      }),
-    });
+    // Clear the reveal after animation
+    setTimeout(() => {
+      setRecentReveal(null);
+    }, 2000);
+
+    setRevealedTracks(new Map(revealedTracks.set(trackId, adder)));
   };
 
   if (error) return <div>Failed to load playlist tracks</div>;
   if (!data) return <div>Loading...</div>;
 
   return (
-    <>
-      <h2 className='text-2xl font-bold mb-4'>Playlist Tracks</h2>
-      <CardGroup>
-        {tracks.map((track) => (
-          <Card key={track.id} text='dark'>
-            {track.album && (
-              <Card.Img variant='top' src={track.album.url} alt={track.title} />
-            )}
-            <Card.Body>
-              <Card.Title>{track.title}</Card.Title>
-              <Card.Text>{track.artist}</Card.Text>
-            </Card.Body>
+    <div className='relative'>
+      {recentReveal && (
+        <div
+          className='fixed inset-0 z-50 animate-reveal'
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.9)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: "100",
+          }}
+        >
+          <div
+            className='animate-bounce-in text-center text-white'
+            style={{
+              fontSize: "min(20vw, 150px)",
+              fontWeight: "bold",
+              textTransform: "uppercase",
+            }}
+          >
+            {recentReveal.adder}
+          </div>
+        </div>
+      )}
 
-            {revealedTracks.has(track.id) ? (
-              <div className='text-sm font-medium text-green-600'>
-                Added by: {revealedTracks.get(track.id)}
-              </div>
-            ) : (
-              <Button
-                onClick={() => handleReveal(track.id)}
-                variant='secondary'
-                disabled={!songAdders.has(track.id)}
-              >
-                Reveal
-              </Button>
-            )}
-          </Card>
+      <h2 className='text-2xl font-bold mb-4'>Playlist Tracks</h2>
+      <Row xs={2} md={4} className='g-4'>
+        {tracks.map((track) => (
+          <Col key={track.id}>
+            <Card text='dark' className='relative overflow-hidden'>
+              {track.album && (
+                <Card.Img
+                  variant='top'
+                  src={track.album.url}
+                  alt={track.title}
+                />
+              )}
+              <Card.Body>
+                <Card.Title>{track.title}</Card.Title>
+                <Card.Text>{track.artist}</Card.Text>
+                {revealedTracks.has(track.id) ? (
+                  <div
+                    className={`
+                  font-bold text-lg
+                  ${
+                    recentReveal?.trackId === track.id ? "animate-slide-up" : ""
+                  }
+                `}
+                  >
+                    Added by: {revealedTracks.get(track.id)}
+                  </div>
+                ) : (
+                  <Button
+                    onClick={() => handleReveal(track.id)}
+                    variant='secondary'
+                    className='hover-scale'
+                    disabled={!songAdders.has(track.id)}
+                  >
+                    Reveal
+                  </Button>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
         ))}
-      </CardGroup>
-    </>
+      </Row>
+      <style jsx>{`
+        .animate-reveal {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .animate-bounce-in {
+          animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)
+            forwards;
+        }
+
+        @keyframes fadeIn {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+
+        @keyframes bounceIn {
+          0% {
+            opacity: 0;
+            transform: scale(0.3);
+          }
+          50% {
+            opacity: 0.9;
+            transform: scale(1.1);
+          }
+          80% {
+            opacity: 1;
+            transform: scale(0.89);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        /* Keep your existing animations for other elements */
+        .animate-slide-up {
+          animation: slideUp 0.3s ease-out forwards;
+        }
+
+        .hover-scale {
+          transition: transform 0.2s;
+        }
+
+        .hover-scale:hover {
+          transform: scale(1.05);
+        }
+
+        @keyframes slideUp {
+          0% {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+    </div>
   );
 };
 
