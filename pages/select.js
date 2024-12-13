@@ -257,7 +257,16 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
           className='mb-4'
         >
           <Tab eventKey='playlist' title='Playlist'>
-            {playlistId && <PlaylistInfo playlistId={playlistId} />}
+            {playlistId && (
+              <>
+                <PlaylistInfo playlistId={playlistId} />{" "}
+                <PlaylistReveal
+                  playlistId={playlistId}
+                  username={user}
+                  roomNumber={roomNumber}
+                />
+              </>
+            )}
           </Tab>
           <Tab eventKey='search' title='Add Songs'>
             <SearchSpotify
@@ -311,37 +320,6 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
               </Button>
             </div>
           </form>
-
-          {playlistId && (
-            <PlaylistReveal
-              playlistId={playlistId}
-              username={user}
-              roomNumber={roomNumber}
-            />
-          )}
-          <Col className={`chat-input ${!toggleChat ? "d-none" : ""}`}>
-            <Row>
-              <Col className='d-flex justify-content-end mb-2'>
-                <Button onClick={() => setToggleChat(!toggleChat)}>X</Button>
-              </Col>
-            </Row>
-            <form onSubmit={handleSubmit}>
-              <FormControl
-                type='text'
-                className='chat-field'
-                value={messageToSend}
-                onChange={(e) => setMessageToSend(e.target.value)}
-                placeholder='start typing....'
-              />
-              <Button
-                className='chat-submit w-50 mt-2'
-                type='submit'
-                disabled={!messageToSend}
-              >
-                Send
-              </Button>
-            </form>
-          </Col>
         </Offcanvas.Body>
       </Offcanvas>
     </div>
