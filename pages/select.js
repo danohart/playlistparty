@@ -163,7 +163,7 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
   return (
     <div className='vaporwave-page'>
       {!showChat ? (
-        <ToastContainer position='top-end'>
+        <ToastContainer position='top-end' className='position-fixed'>
           {chats.map((chat, id) => (
             <ChatMessage chat={chat} key={id} />
           ))}
@@ -175,7 +175,7 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
       <Row className='mb-4 pt-4'>
         <Col
           xs={12}
-          className='d-flex justify-content-between align-items-center'
+          className='d-flex justify-content-center align-items-center'
         >
           <h1>
             <Link href='/'>{siteTitle}</Link>
