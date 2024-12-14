@@ -2,7 +2,7 @@ import { pusher } from "../../../lib/pusher";
 
 // presence channel handler
 export default async function handler(req, res) {
-  const { playlistId, username, roomNumber } = req.body;
+  const { playlistId, roomNumber } = req.body;
   // Add spotify auth info to req.body in api fetch
 
   console.log("playlist req", req.body);

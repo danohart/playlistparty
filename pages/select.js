@@ -74,11 +74,15 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
       auth: { params: { username: user, playlistId } },
     });
 
+    // Main presence channel for user tracking and chat
     const channel = pusher.subscribe(`presence-playlist-shuffle-${roomNumber}`);
+
+    // Playlist channel for handling playlist-specific events
     const playlistChannel = pusher.subscribe(
       `presence-cache-playlist-shuffle-${roomNumber}-playlist`
     );
 
+    // Only handle VIP status and playlist ID on playlist channel
     playlistChannel.bind("pusher:subscription_succeeded", (members) => {
       if (members.me.info.isVip) {
         setPlaylistIdForRoom(members.me.info.playlistId);
@@ -87,35 +91,39 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
 
     channel.bind("pusher:subscription_succeeded", (members) => {
       setOnlineUsersCount(members.count);
-      setOnlineUsers([]);
-      channel.members.each(function (member) {
-        setOnlineUsers((prevState) => [
-          ...prevState,
-          { username: member.info.username, icon: member.info.emoji },
-        ]);
+      const currentUsers = [];
+      channel.members.each((member) => {
+        currentUsers.push({
+          username: member.info.username,
+          icon: member.info.emoji,
+        });
       });
+      setOnlineUsers(currentUsers);
     });
 
     channel.bind("pusher:member_added", (member) => {
-      setOnlineUsersCount(channel.members.count);
-      setOnlineUsers((prevState) => [
-        ...prevState,
-        { username: member.info.username, icon: member.info.emoji },
+      setOnlineUsersCount((count) => count + 1);
+      setOnlineUsers((prevUsers) => [
+        ...prevUsers,
+        {
+          username: member.info.username,
+          icon: member.info.emoji,
+        },
       ]);
     });
 
     channel.bind("pusher:member_removed", (member) => {
-      setOnlineUsersCount(channel.members.count);
-      setOnlineUsers((state) =>
-        state.filter((item) => item.username !== member.info.username)
+      setOnlineUsersCount((count) => count - 1);
+      setOnlineUsers((prevUsers) =>
+        prevUsers.filter((user) => user.username !== member.info.username)
       );
     });
 
+    // Handle playlist updates and chat messages
     channel.bind("playlist-update", function (data) {
       const { username, message, type, trackId } = data;
 
       if (type === "add") {
-        // Store the song addition in localStorage to persist who added each song
         const existingAdders = JSON.parse(
           localStorage.getItem(`songAdders-${roomNumber}`) || "[]"
         );
@@ -130,6 +138,7 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
       setChats((prevState) => [...prevState, { username, message }]);
     });
 
+    // Handle playlist ID updates
     playlistChannel.bind("playlist-id", function (data) {
       setPlaylistId(data.playlistId);
       window.localStorage.setItem(
@@ -146,6 +155,8 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
       pusher.disconnect();
     };
   }, [user, roomNumber, playlistId]);
+
+  // Rest of the component remains the same...
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -219,7 +230,7 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
             </Col>
             <Col xs={12} md={4} className='text-center'>
               <Badge className='online-count-badge'>
-                {onlineUserCount} Online
+                {onlineUserCount / 2} Online
               </Badge>
             </Col>
             <Col
@@ -239,12 +250,19 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
 
           <div className='mt-3'>
             <div className='d-flex flex-wrap gap-2 justify-content-center'>
-              {onlineUsers.map((user) => (
-                <Badge key={user.username} className='user-badge'>
-                  <span className='emoji-icon'>{user.icon}</span>
-                  {user.username}
-                </Badge>
-              ))}
+              {onlineUsers
+                .filter(
+                  (user, index) =>
+                    onlineUsers.findIndex(
+                      (u) => u.username === user.username
+                    ) === index
+                )
+                .map((user) => (
+                  <Badge key={user.username} className='user-badge'>
+                    <span className='emoji-icon'>{user.icon}</span>
+                    {user.username}
+                  </Badge>
+                ))}
             </div>
           </div>
         </Card.Body>
