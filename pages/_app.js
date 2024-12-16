@@ -60,7 +60,6 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
   };
 
   const handlePlaylistChange = (newPlaylistId) => {
-    console.log("newPlaylistId", newPlaylistId.target.value);
     const actualId =
       typeof newPlaylistId === "object"
         ? newPlaylistId.target.value

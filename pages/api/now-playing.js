@@ -1,4 +1,4 @@
-import { currentlyPlayingSong } from "../../lib/spotify";
+import { currentlyPlayingSong, accessToken } from "../../lib/spotify";
 
 export default async function handler(req, res) {
   const response = await currentlyPlayingSong(accessToken);

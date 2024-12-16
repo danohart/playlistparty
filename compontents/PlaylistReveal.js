@@ -4,8 +4,9 @@ import Card from "react-bootstrap/Card";
 import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
 import Pusher from "pusher-js";
+import CurrentlyPlaying from "./CurrentlyPlaying";
 
-const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
+export default function PlaylistReveal({ playlistId, username, roomNumber }) {
   const [tracks, setTracks] = useState([]);
   const [revealedTracks, setRevealedTracks] = useState(new Map());
   const [songAdders, setSongAdders] = useState(new Map());
@@ -20,7 +21,6 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
     { refreshInterval: shouldFetch ? 5000 : null }
   );
 
-  // Load saved state from localStorage
   useEffect(() => {
     const savedAdders = localStorage.getItem(`songAdders-${roomNumber}`);
     const savedReveals = localStorage.getItem(`revealed-${roomNumber}`);
@@ -130,6 +130,7 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
           sm={{ span: 8, offset: 2 }}
           md={{ span: 8, offset: 2 }}
           lg={{ span: 8, offset: 2 }}
+          className='text-center'
         >
           <Button
             onClick={() => setShouldFetch(true)}
@@ -160,6 +161,8 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
           </Button>
         </Col>
       </Row>
+
+      <CurrentlyPlaying />
 
       {recentReveal && (
         <div
@@ -296,6 +299,4 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
       `}</style>
     </div>
   );
-};
-
-export default PlaylistReveal;
+}
