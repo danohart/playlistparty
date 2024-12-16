@@ -39,7 +39,7 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
     if (!user || !roomNumber) {
       const storedUsername = window.localStorage.getItem("chatName");
       const storedRoom = window.localStorage.getItem("roomNumber");
-      const storedPlaylistId = window.localStorage.getItem("playlistId");
+      const storedPlaylistId = window.localStorage.getItem("spotifyPlaylist");
 
       if (!storedUsername || !storedRoom) {
         router.push("/");

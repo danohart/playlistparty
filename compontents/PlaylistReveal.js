@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Button } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
-import CardGroup from "react-bootstrap/CardGroup";
 import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
 import Pusher from "pusher-js";
@@ -11,11 +10,14 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
   const [revealedTracks, setRevealedTracks] = useState(new Map());
   const [songAdders, setSongAdders] = useState(new Map());
   const [recentReveal, setRecentReveal] = useState(null);
+  const [shouldFetch, setShouldFetch] = useState(false);
 
   const { data, error } = useSWR(
-    playlistId ? `/api/get-playlist?playlistId=${playlistId}` : null,
+    shouldFetch && playlistId
+      ? `/api/get-playlist?playlistId=${playlistId}`
+      : null,
     fetcher,
-    { refreshInterval: 5000 }
+    { refreshInterval: shouldFetch ? 5000 : null }
   );
 
   // Load saved state from localStorage
@@ -104,10 +106,8 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
       return;
     }
 
-    // Set the recent reveal to trigger animation
     setRecentReveal({ trackId, adder });
 
-    // Clear the reveal after animation
     setTimeout(() => {
       setRecentReveal(null);
     }, 2000);
@@ -115,11 +115,52 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
     setRevealedTracks(new Map(revealedTracks.set(trackId, adder)));
   };
 
+  const handleRefresh = () => {
+    setShouldFetch(false);
+    setTimeout(() => setShouldFetch(true), 100);
+  };
+
   if (error) return <div>Failed to load playlist tracks</div>;
+
+  if (!shouldFetch) {
+    return (
+      <Row>
+        <Col
+          xs={{ span: 8, offset: 2 }}
+          sm={{ span: 8, offset: 2 }}
+          md={{ span: 8, offset: 2 }}
+          lg={{ span: 8, offset: 2 }}
+        >
+          <Button
+            onClick={() => setShouldFetch(true)}
+            variant='secondary'
+            className='my-4'
+          >
+            Load Playlist Tracks
+          </Button>
+        </Col>
+      </Row>
+    );
+  }
+
   if (!data) return <div>Loading...</div>;
 
   return (
     <div className='relative'>
+      <Row>
+        <Col
+          xs={{ span: 8, offset: 2 }}
+          sm={{ span: 8, offset: 2 }}
+          md={{ span: 8, offset: 2 }}
+          lg={{ span: 8, offset: 2 }}
+          className='text-center'
+        >
+          <Button onClick={handleRefresh} variant='secondary' className='my-4'>
+            Refresh Tracks
+          </Button>
+        </Col>
+      </Row>
+
       {recentReveal && (
         <div
           className='fixed inset-0 z-50 animate-reveal'
@@ -167,11 +208,13 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
                 {revealedTracks.has(track.id) ? (
                   <div
                     className={`
-                  font-bold text-lg
-                  ${
-                    recentReveal?.trackId === track.id ? "animate-slide-up" : ""
-                  }
-                `}
+                      font-bold text-lg
+                      ${
+                        recentReveal?.trackId === track.id
+                          ? "animate-slide-up"
+                          : ""
+                      }
+                    `}
                   >
                     Added by: {revealedTracks.get(track.id)}
                   </div>
@@ -228,7 +271,6 @@ const PlaylistReveal = ({ playlistId, username, roomNumber }) => {
           }
         }
 
-        /* Keep your existing animations for other elements */
         .animate-slide-up {
           animation: slideUp 0.3s ease-out forwards;
         }
