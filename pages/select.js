@@ -89,6 +89,15 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
       }
     });
 
+    // Handle playlist ID updates
+    playlistChannel.bind("playlist-id", function (data) {
+      setPlaylistId(data.playlistId);
+      window.localStorage.setItem(
+        "playlistId",
+        JSON.stringify(data.playlistId)
+      );
+    });
+
     channel.bind("pusher:subscription_succeeded", (members) => {
       setOnlineUsersCount(members.count);
       const currentUsers = [];
@@ -136,15 +145,6 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
       }
 
       setChats((prevState) => [...prevState, { username, message }]);
-    });
-
-    // Handle playlist ID updates
-    playlistChannel.bind("playlist-id", function (data) {
-      setPlaylistId(data.playlistId);
-      window.localStorage.setItem(
-        "playlistId",
-        JSON.stringify(data.playlistId)
-      );
     });
 
     return () => {
