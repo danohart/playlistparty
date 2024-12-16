@@ -7,17 +7,26 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
   const router = useRouter();
   const [username, setUsername] = useState(null);
   const [roomNumber, setRoomNumber] = useState(null);
-  const [spotifyPlaylist, setSpotifyPlaylist] = useState(null);
+  const [playlistId, setPlaylistId] = useState(null);
 
   // Load data from localStorage on initial mount
   useEffect(() => {
-    const storedRoom = window.localStorage.getItem("roomNumber");
-    const storedUsername = window.localStorage.getItem("chatName");
-    const storedPlaylist = window.localStorage.getItem("spotifyPlaylist");
+    try {
+      const storedRoom = window.localStorage.getItem("roomNumber");
+      const storedUsername = window.localStorage.getItem("chatName");
+      const storedPlaylist = window.localStorage.getItem("playlistId");
 
-    if (storedRoom) setRoomNumber(JSON.parse(storedRoom));
-    if (storedUsername) setUsername(JSON.parse(storedUsername));
-    if (storedPlaylist) setSpotifyPlaylist(JSON.parse(storedPlaylist));
+      if (storedRoom) setRoomNumber(JSON.parse(storedRoom));
+      if (storedUsername) setUsername(JSON.parse(storedUsername));
+      if (storedPlaylist) {
+        // Handle both cases: stored object or direct string
+        const parsedPlaylist = JSON.parse(storedPlaylist);
+        setPlaylistId(parsedPlaylist.value || parsedPlaylist);
+      }
+    } catch (error) {
+      console.error("Error loading from localStorage:", error);
+      clearSession();
+    }
   }, []);
 
   // Update localStorage whenever states change
@@ -34,13 +43,11 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
   }, [username]);
 
   useEffect(() => {
-    if (spotifyPlaylist) {
-      window.localStorage.setItem(
-        "spotifyPlaylist",
-        JSON.stringify(spotifyPlaylist)
-      );
+    if (playlistId) {
+      // Store just the ID string
+      window.localStorage.setItem("playlistId", JSON.stringify(playlistId));
     }
-  }, [spotifyPlaylist]);
+  }, [playlistId]);
 
   const handleLogin = () => {
     if (!roomNumber) {
@@ -52,11 +59,19 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
     }
   };
 
+  const handlePlaylistChange = (newPlaylistId) => {
+    console.log("newPlaylistId", newPlaylistId.target.value);
+    const actualId =
+      typeof newPlaylistId === "object"
+        ? newPlaylistId.target.value
+        : newPlaylistId;
+    setPlaylistId(actualId);
+  };
+
   const clearSession = () => {
-    window.localStorage.removeItem("roomNumber");
-    window.localStorage.removeItem("chatName");
-    window.localStorage.removeItem("spotifyPlaylist");
-    window.localStorage.removeItem("playlistId");
+    const keysToRemove = ["roomNumber", "chatName", "playlistId"];
+
+    keysToRemove.forEach((key) => window.localStorage.removeItem(key));
 
     if (roomNumber) {
       window.localStorage.removeItem(`revealed-${roomNumber}`);
@@ -65,7 +80,7 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
 
     setRoomNumber(null);
     setUsername(null);
-    setSpotifyPlaylist(null);
+    setPlaylistId(null);
   };
 
   return (
@@ -73,10 +88,10 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
       <Component
         username={username}
         room={roomNumber}
-        spotifyPlaylist={spotifyPlaylist}
+        spotifyPlaylist={playlistId}
         handleLoginChange={(e) => setUsername(e.target.value)}
         handleRoomChange={(e) => setRoomNumber(parseInt(e.target.value))}
-        handlePlaylistChange={(e) => setSpotifyPlaylist(e.target.value)}
+        handlePlaylistChange={handlePlaylistChange}
         handleLogin={handleLogin}
         clearSession={clearSession}
         {...pageProps}
