@@ -98,10 +98,10 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
       );
     });
 
-    channel.bind("pusher:subscription_succeeded", (members) => {
+    playlistChannel.bind("pusher:subscription_succeeded", (members) => {
       setOnlineUsersCount(members.count);
       const currentUsers = [];
-      channel.members.each((member) => {
+      members.each((member) => {
         currentUsers.push({
           username: member.info.username,
           icon: member.info.emoji,
@@ -110,7 +110,7 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
       setOnlineUsers(currentUsers);
     });
 
-    channel.bind("pusher:member_added", (member) => {
+    playlistChannel.bind("pusher:member_added", (member) => {
       setOnlineUsersCount((count) => count + 1);
       setOnlineUsers((prevUsers) => [
         ...prevUsers,
@@ -121,7 +121,7 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
       ]);
     });
 
-    channel.bind("pusher:member_removed", (member) => {
+    playlistChannel.bind("pusher:member_removed", (member) => {
       setOnlineUsersCount((count) => count - 1);
       setOnlineUsers((prevUsers) =>
         prevUsers.filter((user) => user.username !== member.info.username)
