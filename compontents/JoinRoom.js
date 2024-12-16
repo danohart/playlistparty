@@ -7,7 +7,8 @@ export default function JoinRoom({ handleRoomChange }) {
         <Col>
           <h4>Room Code</h4>
           <FormControl
-            type='text'
+            type='number'
+            maxLength={5}
             placeholder={"Five digit code"}
             onChange={handleRoomChange}
           />
