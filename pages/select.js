@@ -230,7 +230,7 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
             </Col>
             <Col xs={12} md={4} className='text-center'>
               <Badge className='online-count-badge'>
-                {onlineUserCount / 2} Online
+                {onlineUserCount} Online
               </Badge>
             </Col>
             <Col
@@ -250,19 +250,12 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
 
           <div className='mt-3'>
             <div className='d-flex flex-wrap gap-2 justify-content-center'>
-              {onlineUsers
-                .filter(
-                  (user, index) =>
-                    onlineUsers.findIndex(
-                      (u) => u.username === user.username
-                    ) === index
-                )
-                .map((user) => (
-                  <Badge key={user.username} className='user-badge'>
-                    <span className='emoji-icon'>{user.icon}</span>
-                    {user.username}
-                  </Badge>
-                ))}
+              {onlineUsers.map((user) => (
+                <Badge key={user.username} className='user-badge'>
+                  <span className='emoji-icon'>{user.icon}</span>
+                  {user.username}
+                </Badge>
+              ))}
             </div>
           </div>
         </Card.Body>
