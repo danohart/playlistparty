@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Row, Col, Button } from "react-bootstrap";
 import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
@@ -14,7 +14,12 @@ export default function Home({
   spotifyPlaylist,
   clearSession,
 }) {
+  const [isClient, setIsClient] = useState(false);
   const [gameChoice, setGameChoice] = useState(null);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleJoinChoice = () => {
     clearSession();
@@ -32,7 +37,21 @@ export default function Home({
           friends. Your collaborative soundtrack starts here.
         </Col>
       </Row>
-      {!gameChoice ? (
+      {!isClient ? (
+        // Show buttons but disable them until client-side code is ready
+        <Row className='my-4'>
+          <Col xs={12} md={6} className='text-center mb-3'>
+            <Button size='lg' className='w-75' disabled>
+              Create New Room
+            </Button>
+          </Col>
+          <Col xs={12} md={6} className='text-center mb-3'>
+            <Button size='lg' variant='primary' className='w-75' disabled>
+              Join Existing Room
+            </Button>
+          </Col>
+        </Row>
+      ) : !gameChoice ? (
         <>
           <Row className='my-4'>
             <Col xs={12} md={6} className='text-center mb-3'>
@@ -144,4 +163,10 @@ export default function Home({
       )}
     </>
   );
+}
+
+export async function getStaticProps() {
+  return {
+    props: {},
+  };
 }
