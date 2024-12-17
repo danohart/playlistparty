@@ -22,7 +22,12 @@ import ChatNotifications from "@/compontents/ChatMessage";
 import Link from "next/link";
 import PlaylistReveal from "@/compontents/PlaylistReveal";
 
-const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
+export default function Select({
+  username,
+  room,
+  spotifyPlaylist,
+  clearSession,
+}) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [playlistId, setPlaylistId] = useState(spotifyPlaylist);
@@ -187,7 +192,7 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
   }
 
   return (
-    <div className='vaporwave-page'>
+    <>
       <ToastContainer position='top-end' className='position-fixed'>
         {chats.map((chat, id) => (
           <ChatNotifications chats={chat} showChat={showChat} key={id} />
@@ -333,8 +338,6 @@ const Select = ({ username, room, spotifyPlaylist, clearSession }) => {
           </form>
         </Offcanvas.Body>
       </Offcanvas>
-    </div>
+    </>
   );
-};
-
-export default Select;
+}
