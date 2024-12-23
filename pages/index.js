@@ -13,6 +13,7 @@ export default function Home({
   handlePlaylistChange,
   spotifyPlaylist,
   clearSession,
+  room,
 }) {
   const [isClient, setIsClient] = useState(false);
   const [gameChoice, setGameChoice] = useState(null);
@@ -158,6 +159,7 @@ export default function Home({
           <SetUsername
             handleLoginChange={handleLoginChange}
             handleLogin={handleLogin}
+            roomNumber={room}
           />
         </>
       )}
