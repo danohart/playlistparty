@@ -2,6 +2,7 @@
 $mobile-width: 300px;
 $tablet-width: 767px;
 $desktop-width: 1024px;
+$border-radius: 8px;
 
 @mixin mobile {
   @media (min-width: #{$mobile-width}) and (max-width: #{$tablet-width}) {

@@ -26,7 +26,7 @@ main {
     background: rgba($secondary, .8);
     padding: 4%;
     margin: 2%;
-    border-radius: 8px;
+    border-radius: $border-radius;
     box-shadow: 8px 8px 2px 1px rgba($secondary, .2);
 }
 
@@ -51,7 +51,7 @@ h1 {
     margin-bottom: 8px;
     background: rgba($text-light, 0.05);
     padding: 1rem;
-    border-radius: 8px;
+    border-radius: $border-radius;
     border: 1px solid rgba($text-dark, 0.1);
 
     &-image {
@@ -104,7 +104,7 @@ h1 {
         z-index: 10;
         width: 60%;
         background: rgba($background, 0.95);
-        border-radius: 8px;
+        border-radius: $border-radius;
         border: 1px solid rgba($text-light, 0.1);
     }
 
@@ -112,7 +112,7 @@ h1 {
         background-color: $accent;
         color: $text-light;
         padding: 8px 12px;
-        border-radius: 8px;
+        border-radius: $border-radius;
         margin: 4px 0;
         
         @for $i from 1 through 10 {
@@ -267,6 +267,7 @@ h1 {
 .feature-card {
     background: $warning;
     padding: 10px;
+    border-radius: $border-radius;
     
     h3 {
         color: $secondary;
