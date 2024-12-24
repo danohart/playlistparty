@@ -246,34 +246,6 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
             forwards;
         }
 
-        @keyframes fadeIn {
-          0% {
-            opacity: 0;
-          }
-          100% {
-            opacity: 1;
-          }
-        }
-
-        @keyframes bounceIn {
-          0% {
-            opacity: 0;
-            transform: scale(0.3);
-          }
-          50% {
-            opacity: 0.9;
-            transform: scale(1.1);
-          }
-          80% {
-            opacity: 1;
-            transform: scale(0.89);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
         .animate-slide-up {
           animation: slideUp 0.3s ease-out forwards;
         }
@@ -284,17 +256,6 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
 
         .hover-scale:hover {
           transform: scale(1.05);
-        }
-
-        @keyframes slideUp {
-          0% {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
         }
       `}</style>
     </div>
