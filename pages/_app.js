@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "@/styles/style.scss";
 import Layout from "@/compontents/Layout";
 import { useRouter } from "next/router";
+import OfflineNotification from "@/compontents/Offline";
 
 export default function App({ Component, pageProps: { ...pageProps } }) {
   const router = useRouter();
@@ -84,6 +85,7 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
 
   return (
     <Layout>
+      <OfflineNotification />
       <Component
         username={username}
         room={roomNumber}
