@@ -34,7 +34,7 @@ export default function Meta(props) {
         />
         <link rel='manifest' href='/manifest.json' />
         <meta name='theme-color' content='#002C27' />
-        <meta name='apple-mobile-web-app-capable' content='yes' />
+        <meta name='mobile-web-app-capable' content='yes' />
         <meta name='apple-mobile-web-app-status-bar-style' content='default' />
         <meta name='apple-mobile-web-app-title' content='PlaylistParty' />
         <meta name='application-name' content='PlaylistParty' />

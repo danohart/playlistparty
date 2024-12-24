@@ -162,24 +162,10 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
         </Col>
       </Row>
 
-      <CurrentlyPlaying />
+      {/* <CurrentlyPlaying /> */}
 
       {recentReveal && (
-        <div
-          className='fixed inset-0 z-50 animate-reveal'
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0, 0, 0, 0.9)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: "100",
-          }}
-        >
+        <div className='reveal-name fixed inset-0 z-50 animate-reveal'>
           <div
             className='animate-bounce-in text-center text-white'
             style={{

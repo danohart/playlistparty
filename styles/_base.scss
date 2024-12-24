@@ -45,7 +45,6 @@ h1 {
     }
 }
 
-// Song Track Styles
 .track {
     margin-top: 8px;
     margin-bottom: 8px;
@@ -63,7 +62,7 @@ h1 {
 
         &.loading {
             height: 197px;
-            background-color: rgba($accent, 0.3);
+            background-color: $accent;
             border-radius: 4px;
         }
     }
@@ -92,7 +91,27 @@ h1 {
     }
 }
 
-// Enhanced Chat Styles
+.reveal-name {
+    position:fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 09);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.offline-notification {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    z-index: 1050,
+}
+
 .chat {
     display: flex;
     flex-direction: row;
@@ -157,29 +176,12 @@ h1 {
     }
 }
 
-// Toast Notifications
 .toast {
     background: rgba($background, 0.95);
     border: 1px solid rgba($text-light, 0.1);
     
     &-body {
         color: $text-light;
-    }
-}
-
-// Animations
-.fade-in {
-    animation: fadeIn 1s ease 1;
-}
-
-@keyframes fadeIn {
-    0% {
-        opacity: 0;
-        margin-top: -24px;
-    }
-    100% {
-        opacity: 1;
-        margin-top: 0px;
     }
 }
 
@@ -347,4 +349,8 @@ h1 {
             }
         }
     }
+}
+
+.fade-in {
+    animation: fadeIn 1s ease 1;
 }
