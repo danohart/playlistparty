@@ -15,6 +15,8 @@ export default async function handler(req, res) {
     // Get playlist tracks
     const response = await getPlaylistTracks(access_token, playlistId);
 
+    console.log("response for playlist tracks", response);
+
     if (!response.ok) {
       throw new Error(
         `Failed to fetch playlist tracks: ${response.statusText}`
