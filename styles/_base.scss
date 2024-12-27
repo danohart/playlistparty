@@ -242,8 +242,12 @@ h1 {
     border: 1px solid $primary;
     font-size: 36px;
 
-    @include mobile {
+    @include tablet {
         font-size: 24px;
+    }
+
+    @include mobile {
+        font-size: 16px;
     }
 }
 

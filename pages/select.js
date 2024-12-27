@@ -255,7 +255,7 @@ export default function Select({
 
           <div className='mt-3'>
             <div className='d-flex flex-wrap gap-2 justify-content-center'>
-              {onlineUsers.map((user) => (
+              {onlineUsers.map((user, index) => (
                 <Badge key={user.username} className='user-badge'>
                   <span className='emoji-icon'>{user.icon}</span>
                   {user.username}
@@ -275,7 +275,7 @@ export default function Select({
           <Tab eventKey='playlist' title='Playlist'>
             {playlistId && (
               <>
-                <PlaylistInfo playlistId={playlistId} />{" "}
+                <PlaylistInfo playlistId={playlistId} />
                 <PlaylistReveal
                   playlistId={playlistId}
                   username={user}

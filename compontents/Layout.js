@@ -1,4 +1,5 @@
 import { Container, Row, Col } from "react-bootstrap";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 export default function Layout({ children }) {
   return (
@@ -10,6 +11,7 @@ export default function Layout({ children }) {
           </Col>
         </Row>
       </Container>
+      <GoogleAnalytics gaId='G-5TS75L7L97' />
     </>
   );
 }
