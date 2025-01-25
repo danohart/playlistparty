@@ -17,6 +17,11 @@ export default function GetPlaylist({ playlistId }) {
       </Row>
     );
 
+  const convertSpotifyUri = (uri) => {
+    const uriParts = uri.split(":");
+    return `https://open.spotify.com/playlist/${uriParts[2]}`;
+  };
+
   return (
     <>
       <Row>
@@ -29,7 +34,7 @@ export default function GetPlaylist({ playlistId }) {
           <Row>
             <Col className='text-center mt-2 mb-2'>Playlist: {data.name}</Col>
           </Row>
-          <a href={data.uri} target='_blank'>
+          <a href={convertSpotifyUri(data.uri)} target='_blank'>
             <Button className='w-100'>Play Songs</Button>
           </a>
         </Col>
