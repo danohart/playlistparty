@@ -14,12 +14,6 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
   const [shouldFetch, setShouldFetch] = useState(false);
   const [fetchError, setFetchError] = useState(null);
 
-  // Add debugging logs
-  useEffect(() => {
-    console.log("Current playlistId:", playlistId);
-    console.log("shouldFetch status:", shouldFetch);
-  }, [playlistId, shouldFetch]);
-
   const { data, error } = useSWR(
     shouldFetch ? `/api/get-playlist?playlistId=${playlistId}` : null,
     async (url) => {
@@ -144,7 +138,6 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
   };
 
   if (error) return <div>Failed to load playlist tracks</div>;
-  console.log("data", data?.tracks?.items);
 
   if (!shouldFetch) {
     return (
