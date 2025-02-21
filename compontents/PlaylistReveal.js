@@ -12,13 +12,36 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
   const [songAdders, setSongAdders] = useState(new Map());
   const [recentReveal, setRecentReveal] = useState(null);
   const [shouldFetch, setShouldFetch] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
+
+  // Add debugging logs
+  useEffect(() => {
+    console.log("Current playlistId:", playlistId);
+    console.log("shouldFetch status:", shouldFetch);
+  }, [playlistId, shouldFetch]);
 
   const { data, error } = useSWR(
-    shouldFetch && playlistId
-      ? `/api/get-playlist?playlistId=${playlistId}`
-      : null,
-    fetcher,
-    { refreshInterval: shouldFetch ? 5000 : null }
+    shouldFetch ? `/api/get-playlist?playlistId=${playlistId}` : null,
+    async (url) => {
+      try {
+        const response = await fetcher(url);
+        if (!response?.tracks?.items) {
+          throw new Error("Invalid response format");
+        }
+        return response;
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setFetchError(err.message);
+        throw err;
+      }
+    },
+    {
+      refreshInterval: shouldFetch ? 5000 : null,
+      onError: (err) => {
+        console.error("SWR error:", err);
+        setFetchError(err.message);
+      },
+    }
   );
 
   useEffect(() => {
@@ -121,6 +144,7 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
   };
 
   if (error) return <div>Failed to load playlist tracks</div>;
+  console.log("data", data?.tracks?.items);
 
   if (!shouldFetch) {
     return (
@@ -133,7 +157,10 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
           className='text-center'
         >
           <Button
-            onClick={() => setShouldFetch(true)}
+            onClick={() => {
+              console.log("Loading playlist...");
+              setShouldFetch(true);
+            }}
             variant='secondary'
             className='my-4'
           >
@@ -141,6 +168,25 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
           </Button>
         </Col>
       </Row>
+    );
+  }
+
+  if (error || fetchError) {
+    return (
+      <div className='text-center text-red-600'>
+        Error loading playlist tracks: {error?.message || fetchError}
+        <Button
+          onClick={() => {
+            setFetchError(null);
+            setShouldFetch(false);
+            setTimeout(() => setShouldFetch(true), 100);
+          }}
+          variant='secondary'
+          className='mt-4 d-block mx-auto'
+        >
+          Retry
+        </Button>
+      </div>
     );
   }
 

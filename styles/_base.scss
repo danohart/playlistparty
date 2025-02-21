@@ -150,13 +150,12 @@ h1 {
     }
 
     &-input {
-        position: fixed;
+        position: absolute;
         bottom: 0px;
         left: 0px;
         background-color: rgba($secondary, 0.9);
         padding: 10px 10px 20px 10px;
         border-top: 1px solid rgba($text-light, 0.1);
-        width: 100%;
         
         .form-control {
             background: rgba($text-light, 0.05);
@@ -215,10 +214,6 @@ h1 {
               background-color: darken($accent, $i * 4%);
             }
         }
-    }
-
-    &-input {
-        background-color: $secondary;
     }
 }
 
