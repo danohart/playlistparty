@@ -3,6 +3,7 @@ import { getPlaylist } from "../../lib/spotify";
 export default async function handler(req, res) {
   const response = await getPlaylist(req.query.playlistId);
   const playlistInfo = await response.json();
+  console.log("Fetched playlist info:", playlistInfo);
 
   res.setHeader(
     "Cache-Control",
