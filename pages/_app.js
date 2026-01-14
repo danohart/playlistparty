@@ -76,6 +76,7 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
     if (roomNumber) {
       window.localStorage.removeItem(`revealed-${roomNumber}`);
       window.localStorage.removeItem(`songAdders-${roomNumber}`);
+      window.localStorage.removeItem(`userSongs-${roomNumber}`);
     }
 
     setRoomNumber(null);

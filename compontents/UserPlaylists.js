@@ -9,13 +9,22 @@ import {
   Badge,
 } from "react-bootstrap";
 
-export default function UserPlaylists({ playlistId, username, roomNumber }) {
+export default function UserPlaylists({
+  playlistId,
+  username,
+  roomNumber,
+  onSongAdded,
+}) {
   const [playlists, setPlaylists] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [expandedPlaylist, setExpandedPlaylist] = useState(null);
   const [playlistTracks, setPlaylistTracks] = useState({});
   const [addingTrack, setAddingTrack] = useState(null);
+  const [filterSpotifyOnly, setFilterSpotifyOnly] = useState(false);
+  const [nextUrl, setNextUrl] = useState(null);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     fetchUserPlaylists();
@@ -33,8 +42,9 @@ export default function UserPlaylists({ playlistId, username, roomNumber }) {
     }
 
     try {
+      // Changed limit to 25
       const response = await fetch(
-        "https://api.spotify.com/v1/me/playlists?limit=50",
+        "https://api.spotify.com/v1/me/playlists?limit=25",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -54,11 +64,59 @@ export default function UserPlaylists({ playlistId, username, roomNumber }) {
       }
 
       const data = await response.json();
-      setPlaylists(data.items || []);
+
+      // Add metadata about playlist ownership
+      const playlistsWithMeta = (data.items || []).map((playlist) => ({
+        ...playlist,
+        isSpotifyOwned:
+          playlist.owner.id === "spotify" ||
+          playlist.owner.display_name === "Spotify",
+      }));
+
+      setPlaylists(playlistsWithMeta);
+      setNextUrl(data.next);
+      setTotal(data.total);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMorePlaylists = async () => {
+    if (!nextUrl || loadingMore) return;
+
+    setLoadingMore(true);
+    setError(null);
+    const token = localStorage.getItem("user_spotify_token");
+
+    try {
+      const response = await fetch(nextUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch more playlists");
+      }
+
+      const data = await response.json();
+
+      const playlistsWithMeta = (data.items || []).map((playlist) => ({
+        ...playlist,
+        isSpotifyOwned:
+          playlist.owner.id === "spotify" ||
+          playlist.owner.display_name === "Spotify",
+      }));
+
+      setPlaylists((prev) => [...prev, ...playlistsWithMeta]);
+      setNextUrl(data.next);
+    } catch (err) {
+      console.error("Error loading more playlists:", err);
+      setError("Failed to load more playlists");
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -121,7 +179,12 @@ export default function UserPlaylists({ playlistId, username, roomNumber }) {
         throw new Error("Failed to add song");
       }
 
-      // Show success feedback
+      // Notify parent component that song was added
+      if (onSongAdded) {
+        onSongAdded(track.id, track.name, track.artists[0]?.name);
+      }
+
+      // Show success feedback briefly
       setTimeout(() => setAddingTrack(null), 1000);
     } catch (err) {
       console.error("Error adding track:", err);
@@ -139,7 +202,7 @@ export default function UserPlaylists({ playlistId, username, roomNumber }) {
     );
   }
 
-  if (error) {
+  if (error && playlists.length === 0) {
     return (
       <div className='text-center text-danger py-4'>
         <div>{error}</div>
@@ -161,11 +224,31 @@ export default function UserPlaylists({ playlistId, username, roomNumber }) {
     );
   }
 
+  const filteredPlaylists = filterSpotifyOnly
+    ? playlists.filter((p) => p.isSpotifyOwned)
+    : playlists;
+
+  const spotifyPlaylists = playlists.filter((p) => p.isSpotifyOwned);
+
   return (
     <div className='user-playlists'>
-      <h4 className='mb-3'>Your Playlists ({playlists.length})</h4>
+      <div className='d-flex justify-content-between align-items-center mb-3'>
+        <h4 className='mb-0'>
+          Your Playlists ({filteredPlaylists.length}
+          {total > playlists.length && ` of ${total}`})
+        </h4>
+        {spotifyPlaylists.length > 0 && (
+          <Button
+            variant={filterSpotifyOnly ? "primary" : "outline-secondary"}
+            size='sm'
+            onClick={() => setFilterSpotifyOnly(!filterSpotifyOnly)}
+          >
+            {filterSpotifyOnly ? "✓ " : ""}Spotify Playlists Only
+          </Button>
+        )}
+      </div>
       <Accordion>
-        {playlists.map((playlist) => (
+        {filteredPlaylists.map((playlist) => (
           <Accordion.Item eventKey={playlist.id} key={playlist.id}>
             <Accordion.Header onClick={() => handlePlaylistClick(playlist.id)}>
               <div className='d-flex align-items-center w-100'>
@@ -182,11 +265,18 @@ export default function UserPlaylists({ playlistId, username, roomNumber }) {
                   />
                 )}
                 <div className='flex-grow-1'>
-                  <div>
+                  <div className='d-flex align-items-center gap-2'>
                     <strong>{playlist.name}</strong>
+                    {playlist.isSpotifyOwned && (
+                      <Badge bg='success' pill style={{ fontSize: "0.65rem" }}>
+                        Spotify
+                      </Badge>
+                    )}
                   </div>
                   <small className='text-muted'>
                     {playlist.tracks.total} songs
+                    {!playlist.isSpotifyOwned &&
+                      ` • by ${playlist.owner.display_name}`}
                   </small>
                 </div>
               </div>
@@ -257,6 +347,38 @@ export default function UserPlaylists({ playlistId, username, roomNumber }) {
           </Accordion.Item>
         ))}
       </Accordion>
+
+      {/* Load More Button */}
+      {nextUrl && (
+        <div className='text-center mt-4'>
+          <Button
+            variant='secondary'
+            onClick={loadMorePlaylists}
+            disabled={loadingMore}
+          >
+            {loadingMore ? (
+              <>
+                <Spinner
+                  as='span'
+                  animation='border'
+                  size='sm'
+                  role='status'
+                  aria-hidden='true'
+                  className='me-2'
+                />
+                Loading...
+              </>
+            ) : (
+              `Load More Playlists (${playlists.length} of ${total})`
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* Error message for load more failures */}
+      {error && playlists.length > 0 && (
+        <div className='text-center text-danger mt-2 small'>{error}</div>
+      )}
     </div>
   );
 }
