@@ -175,6 +175,18 @@ export default function UserPlaylists({
         }),
       });
 
+      if (response.status === 429) {
+        // Server-side rate limit: user already added a song
+        const data = await response.json();
+        alert(data.error || "You have already added a song to this room");
+        // Notify parent to update state
+        if (onSongAdded) {
+          onSongAdded(track.id, track.name, track.artists[0]?.name);
+        }
+        setAddingTrack(null);
+        return;
+      }
+
       if (!response.ok) {
         throw new Error("Failed to add song");
       }

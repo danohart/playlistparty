@@ -69,7 +69,7 @@ export default function SearchSpotify({ playlistId, username, roomNumber }) {
         roomNumber,
       }),
     })
-      .then((res) => {
+      .then(async (res) => {
         if (res.ok) {
           // Store that this user has added a song
           const userSongs = JSON.parse(
@@ -89,12 +89,17 @@ export default function SearchSpotify({ playlistId, username, roomNumber }) {
           setHasAddedSong(true);
           setAddedSongInfo(userSongs[username]);
           setMessage(addSongsMessage("songs", res.status));
+        } else if (res.status === 429) {
+          // Server-side rate limit: user already added a song
+          const data = await res.json();
+          setMessage(data.error || "You have already added a song to this room");
+          setHasAddedSong(true);
         } else {
           setMessage(addSongsMessage("songs", res.status));
         }
         setSearchData({ items: [] });
         setSearchTerm("");
-        setTimeout(() => setMessage(null), 3000);
+        setTimeout(() => setMessage(null), 5000);
       })
       .catch((error) => {
         console.error("Error adding song:", error);
@@ -104,30 +109,12 @@ export default function SearchSpotify({ playlistId, username, roomNumber }) {
       });
   }
 
-  const handleRemoveRestriction = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to remove your song and add a different one?"
-      )
-    ) {
-      const userSongs = JSON.parse(
-        localStorage.getItem(`userSongs-${roomNumber}`) || "{}"
-      );
-      delete userSongs[username];
-      localStorage.setItem(
-        `userSongs-${roomNumber}`,
-        JSON.stringify(userSongs)
-      );
-      setHasAddedSong(false);
-      setAddedSongInfo(null);
-    }
-  };
 
   return (
     <>
       {hasAddedSong && addedSongInfo && (
         <Alert variant='info' className='mb-3'>
-          <Alert.Heading>✓ You've added your song!</Alert.Heading>
+          <Alert.Heading>You've added your song!</Alert.Heading>
           <p className='mb-2'>
             <strong>{addedSongInfo.trackName}</strong> by{" "}
             {addedSongInfo.artistName}
@@ -135,16 +122,6 @@ export default function SearchSpotify({ playlistId, username, roomNumber }) {
           <small className='text-muted'>
             You can only add one song per room to keep things fair and fun!
           </small>
-          <hr />
-          <div className='d-flex justify-content-end'>
-            <Button
-              variant='outline-secondary'
-              size='sm'
-              onClick={handleRemoveRestriction}
-            >
-              Change My Song
-            </Button>
-          </div>
         </Alert>
       )}
 
@@ -156,8 +133,7 @@ export default function SearchSpotify({ playlistId, username, roomNumber }) {
         <Tab eventKey='search' title='Search Songs' disabled={hasAddedSong}>
           {hasAddedSong ? (
             <Alert variant='warning' className='text-center'>
-              You've already added a song to this playlist. Click "Change My
-              Song" above if you want to add a different one.
+              You've already added a song to this playlist.
             </Alert>
           ) : (
             <>
@@ -252,8 +228,7 @@ export default function SearchSpotify({ playlistId, username, roomNumber }) {
         >
           {hasAddedSong ? (
             <Alert variant='warning' className='text-center'>
-              You've already added a song to this playlist. Click "Change My
-              Song" above if you want to add a different one.
+              You've already added a song to this playlist.
             </Alert>
           ) : (
             <>
