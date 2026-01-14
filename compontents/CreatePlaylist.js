@@ -6,6 +6,7 @@ import {
   names,
 } from "unique-names-generator";
 import ResponseMessages from "@/compontents/ResponseMessages";
+import { events } from "@/lib/analytics";
 
 export default function CreatePlaylist({ playlistSelect }) {
   const [playlistName, setPlaylistName] = useState("");
@@ -45,12 +46,15 @@ export default function CreatePlaylist({ playlistSelect }) {
         public: false,
       }),
     })
-      .then(async (res) =>
+      .then(async (res) => {
+        if (res.ok) {
+          events.playlistCreated();
+        }
         setMessage(
           ResponseMessages("playlist", res.status),
           playlistSelect({ target: { value: await res.json() } })
-        )
-      )
+        );
+      })
       .then(setLoading(false));
   }
 

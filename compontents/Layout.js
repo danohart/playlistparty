@@ -11,7 +11,7 @@ export default function Layout({ children }) {
           </Col>
         </Row>
       </Container>
-      <GoogleAnalytics gaId='G-5TS75L7L97' />
+      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
     </>
   );
 }

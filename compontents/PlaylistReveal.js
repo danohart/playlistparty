@@ -5,6 +5,7 @@ import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
 import Pusher from "pusher-js";
 import CurrentlyPlaying from "./CurrentlyPlaying";
+import { events } from "@/lib/analytics";
 
 export default function PlaylistReveal({ playlistId, username, roomNumber }) {
   const [tracks, setTracks] = useState([]);
@@ -102,6 +103,8 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
   // Update tracks when data changes
   useEffect(() => {
     if (data?.tracks?.items) {
+      const trackCount = data.tracks.items.length;
+      events.playlistLoaded(trackCount, roomNumber);
       setTracks(
         data.tracks.items.map((item) => ({
           id: item.track.id,
@@ -112,7 +115,7 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
         }))
       );
     }
-  }, [data]);
+  }, [data, roomNumber]);
 
   const handleReveal = async (trackId) => {
     if (revealedTracks.has(trackId)) return;
@@ -123,6 +126,7 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
       return;
     }
 
+    events.songRevealed(roomNumber);
     setRecentReveal({ trackId, adder });
 
     setTimeout(() => {

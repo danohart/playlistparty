@@ -13,6 +13,7 @@ import {
 import addSongsMessage from "./ResponseMessages";
 import UserSpotifyAuth from "./UserSpotifyAuth";
 import UserPlaylists from "./UserPlaylists";
+import { events } from "@/lib/analytics";
 
 export default function SearchSpotify({ playlistId, username, roomNumber }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,9 +42,11 @@ export default function SearchSpotify({ playlistId, username, roomNumber }) {
   }, [username, roomNumber]);
 
   async function handleSubmit() {
-    await fetch(`/api/search?searchTerm=${searchTerm}`).then(async (res) =>
-      setSearchData(await res.json())
-    );
+    await fetch(`/api/search?searchTerm=${searchTerm}`).then(async (res) => {
+      const data = await res.json();
+      events.songSearchPerformed(searchTerm, data.items?.length || 0);
+      setSearchData(data);
+    });
   }
 
   function addToPlaylist(song, songName, artistName) {
@@ -86,11 +89,13 @@ export default function SearchSpotify({ playlistId, username, roomNumber }) {
             JSON.stringify(userSongs)
           );
 
+          events.songAdded("search", roomNumber);
           setHasAddedSong(true);
           setAddedSongInfo(userSongs[username]);
           setMessage(addSongsMessage("songs", res.status));
         } else if (res.status === 429) {
           // Server-side rate limit: user already added a song
+          events.songAddRejected("already_added_one", roomNumber);
           const data = await res.json();
           setMessage(data.error || "You have already added a song to this room");
           setHasAddedSong(true);

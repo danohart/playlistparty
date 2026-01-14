@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Pusher from "pusher-js";
 import { useRouter } from "next/router";
 import {
@@ -21,6 +21,7 @@ import PlaylistInfo from "@/compontents/PlaylistInfo";
 import ChatNotifications from "@/compontents/ChatMessage";
 import Link from "next/link";
 import PlaylistReveal from "@/compontents/PlaylistReveal";
+import { events } from "@/lib/analytics";
 
 export default function Select({
   username,
@@ -39,6 +40,7 @@ export default function Select({
   const [onlineUserCount, setOnlineUsersCount] = useState(0);
   const [messageToSend, setMessageToSend] = useState("");
   const [activeTab, setActiveTab] = useState("search");
+  const sessionStartTime = useRef(Date.now());
 
   useEffect(() => {
     if (!user || !roomNumber) {
@@ -58,6 +60,10 @@ export default function Select({
       }
     }
     setIsLoading(false);
+    // Track room entered when component loads
+    if (roomNumber) {
+      events.roomEntered(roomNumber, 1);
+    }
   }, [user, roomNumber]);
 
   async function setPlaylistIdForRoom(playlistId) {
@@ -178,7 +184,31 @@ export default function Select({
         roomNumber,
       }),
     });
+    events.messageSent(roomNumber);
     setMessageToSend("");
+  };
+
+  const handleChatOpen = () => {
+    events.chatOpened(roomNumber);
+    setShowChat(true);
+  };
+
+  const handleTabChange = (tabName) => {
+    events.tabChanged(tabName, roomNumber);
+    setActiveTab(tabName);
+  };
+
+  const handleLeaveRoom = () => {
+    const sessionDurationSec = Math.floor(
+      (Date.now() - sessionStartTime.current) / 1000
+    );
+    const userSongs = JSON.parse(
+      localStorage.getItem(`userSongs-${roomNumber}`) || "{}"
+    );
+    const songsAdded = userSongs[user] ? 1 : 0;
+    events.roomExited(roomNumber, sessionDurationSec, songsAdded);
+    clearSession();
+    router.push("/");
   };
 
   if (isLoading) {
@@ -217,10 +247,7 @@ export default function Select({
             variant='danger'
             size='sm'
             className='vaporwave-btn-danger mb-2'
-            onClick={() => {
-              clearSession();
-              router.push("/");
-            }}
+            onClick={handleLeaveRoom}
           >
             Leave Room
           </Button>
@@ -246,7 +273,7 @@ export default function Select({
               <Button
                 variant='secondary'
                 size='lg'
-                onClick={() => setShowChat(true)}
+                onClick={handleChatOpen}
               >
                 Open Chat
               </Button>
@@ -269,7 +296,7 @@ export default function Select({
       <div className='content-tabs'>
         <Tabs
           activeKey={activeTab}
-          onSelect={(k) => setActiveTab(k)}
+          onSelect={handleTabChange}
           className='mb-4'
         >
           <Tab eventKey='playlist' title='Playlist'>

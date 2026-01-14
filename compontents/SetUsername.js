@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Row, Col, Button, FormControl, Alert } from "react-bootstrap";
+import { events } from "@/lib/analytics";
 
 export default function SetUsername({
   handleLoginChange,
@@ -47,6 +48,7 @@ export default function SetUsername({
     }
 
     if (createRoom) {
+      events.roomCreationCompleted();
       handleLoginChange({ target: { value: username } });
       handleLogin();
       return;
@@ -54,6 +56,7 @@ export default function SetUsername({
 
     const isValid = await checkRoom(roomNumber);
     if (isValid) {
+      events.roomJoinCompleted(roomNumber);
       handleLoginChange({ target: { value: username } });
       handleLogin();
     }

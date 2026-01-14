@@ -5,6 +5,7 @@ import { siteTitle } from "@/lib/constants";
 import CreatePlaylist from "@/compontents/CreatePlaylist";
 import JoinRoom from "@/compontents/JoinRoom";
 import SetUsername from "@/compontents/SetUsername";
+import { events } from "@/lib/analytics";
 
 export default function Home({
   handleLogin,
@@ -23,6 +24,7 @@ export default function Home({
   }, []);
 
   const handleJoinChoice = () => {
+    events.roomJoinStarted();
     clearSession();
     setGameChoice("join");
   };
@@ -59,7 +61,10 @@ export default function Home({
               <Button
                 size='lg'
                 className='w-75'
-                onClick={() => setGameChoice("create")}
+                onClick={() => {
+                  events.roomCreationStarted();
+                  setGameChoice("create");
+                }}
               >
                 Create New Room
               </Button>

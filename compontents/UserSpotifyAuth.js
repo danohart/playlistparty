@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Card, Spinner, Alert } from "react-bootstrap";
+import { events } from "@/lib/analytics";
 
 export default function UserSpotifyAuth({ onAuthChange }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -41,6 +42,7 @@ export default function UserSpotifyAuth({ onAuthChange }) {
       localStorage.setItem("user_spotify_token", access_token);
       localStorage.setItem("user_spotify_token_expiry", expiryTime.toString());
 
+      events.spotifyAuthCompleted();
       setIsAuthenticated(true);
       setError(null);
       onAuthChange?.(true);
@@ -50,6 +52,7 @@ export default function UserSpotifyAuth({ onAuthChange }) {
   };
 
   const handleLogin = () => {
+    events.spotifyAuthStarted();
     const state = Math.random().toString(36).substring(2, 15);
     localStorage.setItem("spotify_auth_state", state);
 

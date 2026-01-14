@@ -8,6 +8,7 @@ import {
   Accordion,
   Badge,
 } from "react-bootstrap";
+import { events } from "@/lib/analytics";
 
 export default function UserPlaylists({
   playlistId,
@@ -177,6 +178,7 @@ export default function UserPlaylists({
 
       if (response.status === 429) {
         // Server-side rate limit: user already added a song
+        events.songAddRejected("already_added_one", roomNumber);
         const data = await response.json();
         alert(data.error || "You have already added a song to this room");
         // Notify parent to update state
@@ -191,6 +193,7 @@ export default function UserPlaylists({
         throw new Error("Failed to add song");
       }
 
+      events.songAdded("user_playlist", roomNumber);
       // Notify parent component that song was added
       if (onSongAdded) {
         onSongAdded(track.id, track.name, track.artists[0]?.name);
