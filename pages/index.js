@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { Row, Col, Button } from "react-bootstrap";
 import Meta from "@/compontents/Meta";
 import { siteTitle } from "@/lib/constants";
 import CreatePlaylist from "@/compontents/CreatePlaylist";
 import JoinRoom from "@/compontents/JoinRoom";
 import SetUsername from "@/compontents/SetUsername";
+import InvitePrompt from "@/compontents/InvitePrompt";
 import { events } from "@/lib/analytics";
 
 export default function Home({
@@ -15,13 +17,28 @@ export default function Home({
   spotifyPlaylist,
   clearSession,
   room,
+  showInvitePrompt,
+  continueToRoom,
 }) {
+  const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [gameChoice, setGameChoice] = useState(null);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Auto-select "Join" mode if room parameter is in URL
+  useEffect(() => {
+    if (router.query.room && !gameChoice) {
+      const roomNum = parseInt(router.query.room);
+      if (!isNaN(roomNum)) {
+        handleRoomChange({ target: { value: roomNum } });
+        setGameChoice("join");
+        events.roomJoinStarted();
+      }
+    }
+  }, [router.query.room, gameChoice]);
 
   const handleJoinChoice = () => {
     events.roomJoinStarted();
@@ -136,6 +153,8 @@ export default function Home({
               </Button>
               <CreatePlaylist playlistSelect={handlePlaylistChange} />
             </>
+          ) : showInvitePrompt ? (
+            <InvitePrompt roomNumber={room} onContinue={continueToRoom} />
           ) : (
             <>
               <h2>Playlist created!</h2>
@@ -160,7 +179,7 @@ export default function Home({
             ← Back
           </Button>
           <h2>Join a room</h2>
-          <JoinRoom handleRoomChange={handleRoomChange} />
+          <JoinRoom handleRoomChange={handleRoomChange} roomNumber={room} />
           <SetUsername
             handleLoginChange={handleLoginChange}
             handleLogin={handleLogin}

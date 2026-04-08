@@ -50,7 +50,7 @@ export default function SetUsername({
     if (createRoom) {
       events.roomCreationCompleted();
       handleLoginChange({ target: { value: username } });
-      handleLogin();
+      handleLogin(true); // Pass true to indicate this is a room creation
       return;
     }
 

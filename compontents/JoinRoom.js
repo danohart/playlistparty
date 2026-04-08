@@ -1,6 +1,6 @@
 import { Row, Col, FormControl } from "react-bootstrap";
 
-export default function JoinRoom({ handleRoomChange }) {
+export default function JoinRoom({ handleRoomChange, roomNumber }) {
   return (
     <>
       <Row className='mt-2'>
@@ -11,6 +11,7 @@ export default function JoinRoom({ handleRoomChange }) {
             maxLength={5}
             placeholder={"Five digit code"}
             onChange={handleRoomChange}
+            value={roomNumber || ''}
           />
         </Col>
       </Row>

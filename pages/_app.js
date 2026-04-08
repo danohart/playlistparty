@@ -9,6 +9,7 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
   const [username, setUsername] = useState(null);
   const [roomNumber, setRoomNumber] = useState(null);
   const [playlistId, setPlaylistId] = useState(null);
+  const [showInvitePrompt, setShowInvitePrompt] = useState(false);
 
   // Load data from localStorage on initial mount
   useEffect(() => {
@@ -50,12 +51,24 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
     }
   }, [playlistId]);
 
-  const handleLogin = () => {
+  const handleLogin = (isCreatingRoom = false) => {
     if (!roomNumber) {
       const newRoom = Math.floor(Math.random() * 90000) + 10000;
       setRoomNumber(newRoom);
-      router.push(`/select?roomNumber=${newRoom}`);
+      // Show invite prompt for room creators instead of redirecting immediately
+      if (isCreatingRoom) {
+        setShowInvitePrompt(true);
+      } else {
+        router.push(`/select?roomNumber=${newRoom}`);
+      }
     } else {
+      router.push(`/select?roomNumber=${roomNumber}`);
+    }
+  };
+
+  const continueToRoom = () => {
+    setShowInvitePrompt(false);
+    if (roomNumber) {
       router.push(`/select?roomNumber=${roomNumber}`);
     }
   };
@@ -82,6 +95,7 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
     setRoomNumber(null);
     setUsername(null);
     setPlaylistId(null);
+    setShowInvitePrompt(false);
   };
 
   return (
@@ -96,6 +110,8 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
         handlePlaylistChange={handlePlaylistChange}
         handleLogin={handleLogin}
         clearSession={clearSession}
+        showInvitePrompt={showInvitePrompt}
+        continueToRoom={continueToRoom}
         {...pageProps}
       />
     </Layout>
