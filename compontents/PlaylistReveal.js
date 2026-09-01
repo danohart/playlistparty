@@ -5,12 +5,23 @@ import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
 import Pusher from "pusher-js";
 import CurrentlyPlaying from "./CurrentlyPlaying";
-import { events } from "@/lib/analytics";
+import { events, getClientId } from "@/lib/analytics";
 
-export default function PlaylistReveal({ playlistId, username, roomNumber }) {
+export default function PlaylistReveal({
+  playlistId,
+  username,
+  roomNumber,
+  isLeader,
+  initialAddedTrackIds,
+}) {
   const [tracks, setTracks] = useState([]);
   const [revealedTracks, setRevealedTracks] = useState(new Map());
-  const [songAdders, setSongAdders] = useState(new Map());
+  // Which tracks have a submitter — never who, just which. Populated from the
+  // leader-check round trip (pages/select.js -> /api/room/init) and live
+  // Pusher "add" events, neither of which carry a username.
+  const [addedTrackIds, setAddedTrackIds] = useState(
+    () => new Set(initialAddedTrackIds || [])
+  );
   const [recentReveal, setRecentReveal] = useState(null);
   const [shouldFetch, setShouldFetch] = useState(false);
   const [fetchError, setFetchError] = useState(null);
@@ -40,32 +51,33 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
   );
 
   useEffect(() => {
-    const savedAdders = localStorage.getItem(`songAdders-${roomNumber}`);
     const savedReveals = localStorage.getItem(`revealed-${roomNumber}`);
-
-    if (savedAdders) {
-      setSongAdders(new Map(JSON.parse(savedAdders)));
-    }
     if (savedReveals) {
       setRevealedTracks(new Map(JSON.parse(savedReveals)));
     }
   }, [roomNumber]);
 
-  // Save state to localStorage when it changes
+  // The leader-check round trip (pages/select.js) can resolve after this
+  // component's first render — merge its result in when it arrives.
   useEffect(() => {
-    if (songAdders.size > 0) {
-      localStorage.setItem(
-        `songAdders-${roomNumber}`,
-        JSON.stringify([...songAdders])
-      );
-    }
+    if (!initialAddedTrackIds?.length) return;
+    setAddedTrackIds((prev) => {
+      const next = new Set(prev);
+      initialAddedTrackIds.forEach((id) => next.add(id));
+      return next;
+    });
+  }, [initialAddedTrackIds]);
+
+  // Save revealed tracks to localStorage when they change. This is safe to
+  // cache — it's public, post-reveal information, unlike the answer key.
+  useEffect(() => {
     if (revealedTracks.size > 0) {
       localStorage.setItem(
         `revealed-${roomNumber}`,
         JSON.stringify([...revealedTracks])
       );
     }
-  }, [songAdders, revealedTracks, roomNumber]);
+  }, [revealedTracks, roomNumber]);
 
   // Setup Pusher subscription
   useEffect(() => {
@@ -81,15 +93,18 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
 
     channel.bind("playlist-update", (data) => {
       if (data.type === "add") {
-        setSongAdders((prev) => {
-          const newMap = new Map(prev);
-          newMap.set(data.trackId, data.username);
-          return newMap;
-        });
+        // No username on this event by design — see
+        // pages/api/add-to-playlist.js. This only says a track is revealable.
+        setAddedTrackIds((prev) => new Set(prev).add(data.trackId));
       } else if (data.type === "reveal") {
+        // Broadcast by the leader-checked /api/room/reveal — every client
+        // (including the leader's own) learns the answer and sees the
+        // animation from this one place, so the reveal is synced for everyone.
         setRevealedTracks(
-          (prev) => new Map(prev.set(data.trackId, data.adder))
+          (prev) => new Map(prev).set(data.trackId, data.adder)
         );
+        setRecentReveal({ trackId: data.trackId, adder: data.adder });
+        setTimeout(() => setRecentReveal(null), 2000);
       }
     });
 
@@ -118,22 +133,30 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
   }, [data, roomNumber]);
 
   const handleReveal = async (trackId) => {
-    if (revealedTracks.has(trackId)) return;
-
-    const adder = songAdders.get(trackId);
-    if (!adder) {
-      console.log("No adder found for track:", trackId);
+    if (!isLeader || revealedTracks.has(trackId) || !addedTrackIds.has(trackId)) {
       return;
     }
 
-    events.songRevealed(roomNumber);
-    setRecentReveal({ trackId, adder });
+    try {
+      const res = await fetch("/api/room/reveal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomNumber, trackId, clientId: getClientId() }),
+      });
+      const body = await res.json();
 
-    setTimeout(() => {
-      setRecentReveal(null);
-    }, 2000);
+      if (!res.ok || !body.adder) {
+        console.error("Reveal failed:", body.error);
+        return;
+      }
 
-    setRevealedTracks(new Map(revealedTracks.set(trackId, adder)));
+      events.songRevealed(roomNumber);
+      // Local state updates when the resulting Pusher broadcast comes back
+      // through the subscription above — that's what keeps every client
+      // (leader included) in sync from a single source of truth.
+    } catch (err) {
+      console.error("Error revealing track:", err);
+    }
   };
 
   const handleRefresh = () => {
@@ -250,15 +273,19 @@ export default function PlaylistReveal({ playlistId, username, roomNumber }) {
                   >
                     Added by: {revealedTracks.get(track.id)}
                   </div>
-                ) : (
+                ) : isLeader ? (
                   <Button
                     onClick={() => handleReveal(track.id)}
                     variant='secondary'
                     className='hover-scale'
-                    disabled={!songAdders.has(track.id)}
+                    disabled={!addedTrackIds.has(track.id)}
                   >
                     Reveal
                   </Button>
+                ) : (
+                  <div className='text-muted small'>
+                    Waiting on the party leader to reveal…
+                  </div>
                 )}
               </Card.Body>
             </Card>

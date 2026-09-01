@@ -9,7 +9,14 @@ import {
 import ResponseMessages from "@/compontents/ResponseMessages";
 import { events } from "@/lib/analytics";
 
-const TAKEN_LATELY = ["Basement 2am", "Dad's car radio", "Sunday roast"];
+const TAKEN_LATELY = [
+  "Greatest Guitar Solos",
+  "Basement 2am",
+  "Dad's car radio",
+  "Sunday roast",
+  "Blazed And Confused",
+  "The 90s Are Back",
+];
 
 export default function CreatePlaylist({ playlistSelect, onBack }) {
   const [playlistName, setPlaylistName] = useState("");
@@ -67,7 +74,7 @@ export default function CreatePlaylist({ playlistSelect, onBack }) {
       setMessage(
         ResponseMessages("playlist", res.status) ||
           (body && body.error) ||
-          "Couldn't create the playlist. Please try again."
+          "Couldn't create the playlist. Please try again.",
       );
     } catch (err) {
       events.playlistCreateFailed({ status: 0, reason: "network_error" });
@@ -79,11 +86,11 @@ export default function CreatePlaylist({ playlistSelect, onBack }) {
 
   return (
     <>
-      <p className="flow-intro">
+      <p className='flow-intro'>
         This is what your friends see when they punch in the code.{" "}
         {onBack ? (
           <a
-            href="#back"
+            href='#back'
             onClick={(e) => {
               e.preventDefault();
               onBack();
@@ -97,9 +104,9 @@ export default function CreatePlaylist({ playlistSelect, onBack }) {
       </p>
 
       <FormControl
-        size="lg"
-        name="playlist-field"
-        placeholder="FRIDAY NIGHT, KITCHEN FLOOR"
+        size='lg'
+        name='playlist-field'
+        placeholder='FRIDAY NIGHT, KITCHEN FLOOR'
         value={playlistName}
         onChange={handleChange}
         maxLength={40}
@@ -107,15 +114,15 @@ export default function CreatePlaylist({ playlistSelect, onBack }) {
       />
 
       <Button
-        variant="primary"
-        size="lg"
-        className="w-100"
+        variant='primary'
+        size='lg'
+        className='w-100'
         disabled={loading || playlistName.trim() === ""}
         onClick={() => createPlaylist(playlistName)}
       >
         {loading ? (
-          <Spinner animation="border" size="sm" role="status">
-            <span className="visually-hidden">Creating…</span>
+          <Spinner animation='border' size='sm' role='status'>
+            <span className='visually-hidden'>Creating…</span>
           </Spinner>
         ) : (
           "Create playlist"
@@ -123,25 +130,25 @@ export default function CreatePlaylist({ playlistSelect, onBack }) {
       </Button>
 
       <Button
-        variant="outline-light"
-        className="flow-secondary"
+        variant='outline-light'
+        className='flow-secondary'
         onClick={uniquePlaylistName}
         disabled={loading}
       >
-        <Shuffle aria-hidden="true" />
+        <Shuffle aria-hidden='true' />
         Make up a name
       </Button>
 
-      {message ? <p className="flow-note">{message}</p> : null}
+      {message ? <p className='flow-note'>{message}</p> : null}
 
-      <div className="pp-taken">
-        <p className="pp-taken-label">Taken lately</p>
-        <div className="pp-chips">
+      <div className='pp-taken'>
+        <p className='pp-taken-label'>Taken lately</p>
+        <div className='pp-chips'>
           {TAKEN_LATELY.map((name) => (
             <button
-              type="button"
+              type='button'
               key={name}
-              className="pp-chip"
+              className='pp-chip'
               onClick={() => setPlaylistName(name)}
             >
               {name}

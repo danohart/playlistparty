@@ -1,5 +1,6 @@
 import { getAccessToken } from "../../lib/spotify";
 import { pusher } from "../../lib/pusher";
+import { recordAdder } from "../../lib/room";
 
 // Server-side tracking of who has added songs to each room
 // Key format: "roomNumber:username" -> trackId
@@ -53,22 +54,25 @@ export default async function addToPlaylist(req, res) {
       }
     );
 
-    // trigger a new post event via pusher
-    await pusher
-      .trigger(`presence-playlist-shuffle-${roomNumber}`, "playlist-update", {
-        message: `${username} just added their song!`,
-        username,
-        trackId,
-        type: "add",
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    // Only record the song if it was successfully added to Spotify
+    // Only record/announce the song if it was successfully added to Spotify.
+    // The "add" broadcast deliberately omits the username — it only tells the
+    // room a track became revealable, not who added it. The real
+    // trackId -> username mapping lives in Redis and is only ever released by
+    // the leader-checked /api/room/reveal endpoint.
     if (addSong.ok) {
       roomSongAdders.set(userRoomKey, trackId);
       entryTimestamps.set(userRoomKey, Date.now());
+
+      await recordAdder(roomNumber, trackId, username);
+
+      await pusher
+        .trigger(`presence-playlist-shuffle-${roomNumber}`, "playlist-update", {
+          type: "add",
+          trackId,
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
 
     console.log(addSong.statusText);

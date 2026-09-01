@@ -21,7 +21,7 @@ import PlaylistInfo from "@/compontents/PlaylistInfo";
 import ChatNotifications from "@/compontents/ChatMessage";
 import Link from "next/link";
 import PlaylistReveal from "@/compontents/PlaylistReveal";
-import { events } from "@/lib/analytics";
+import { events, getClientId } from "@/lib/analytics";
 
 export default function Select({
   username,
@@ -47,6 +47,8 @@ export default function Select({
   const reachedSearchTabRef = useRef(true); // "search" is the default tab
   const performedSearchRef = useRef(false);
   const hasExitedRef = useRef(false);
+  const [isLeader, setIsLeader] = useState(false);
+  const [initialAddedTrackIds, setInitialAddedTrackIds] = useState([]);
 
   useEffect(() => {
     if (!user || !roomNumber) {
@@ -67,6 +69,27 @@ export default function Select({
     }
     setIsLoading(false);
   }, [user, roomNumber]);
+
+  // Claim/read the room's leader. Whoever gets here first (normally the
+  // creator, who lands on this page before anyone can follow the invite link)
+  // becomes the leader; everyone else just learns who it is. Safe to re-run on
+  // refresh — it never steals leadership, only reports it.
+  useEffect(() => {
+    if (!roomNumber) return;
+
+    const clientId = getClientId();
+    fetch("/api/room/init", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomNumber, clientId }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setIsLeader(data.leaderId === clientId);
+        setInitialAddedTrackIds(data.addedTrackIds || []);
+      })
+      .catch((err) => console.error("Error initializing room leader:", err));
+  }, [roomNumber]);
 
   async function setPlaylistIdForRoom(playlistId) {
     await fetch("/api/pusher/playlist", {
@@ -168,22 +191,16 @@ export default function Select({
       );
     });
 
-    // Handle playlist updates and chat messages
+    // Handle chat messages. "add"/"reveal" are system events for the Playlist
+    // tab (handled by PlaylistReveal's own subscription to this channel) —
+    // real chat messages, sent from handleSubmit below, carry no `type`. Note:
+    // an "add" event deliberately does not carry a username — see
+    // pages/api/add-to-playlist.js — so nobody can learn who submitted a track
+    // before the leader reveals it.
     channel.bind("playlist-update", function (data) {
-      const { username, message, type, trackId } = data;
+      if (data.type) return;
 
-      if (type === "add") {
-        const existingAdders = JSON.parse(
-          localStorage.getItem(`songAdders-${roomNumber}`) || "[]"
-        );
-        const addersMap = new Map(existingAdders);
-        addersMap.set(trackId, username);
-        localStorage.setItem(
-          `songAdders-${roomNumber}`,
-          JSON.stringify([...addersMap])
-        );
-      }
-
+      const { username, message } = data;
       setChats((prevState) => [...prevState, { username, message }]);
     });
 
@@ -376,6 +393,8 @@ export default function Select({
                   playlistId={playlistId}
                   username={user}
                   roomNumber={roomNumber}
+                  isLeader={isLeader}
+                  initialAddedTrackIds={initialAddedTrackIds}
                 />
               </>
             )}
