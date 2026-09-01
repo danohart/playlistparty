@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Row, Col, Button, Alert, FormControl, InputGroup } from "react-bootstrap";
 import { events } from "@/lib/analytics";
 
 export default function InvitePrompt({ roomNumber, onContinue }) {
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    events.invitePromptShown(roomNumber);
+  }, [roomNumber]);
+
+  const handleContinue = () => {
+    events.invitePromptContinued(roomNumber);
+    onContinue();
+  };
 
   // Construct the shareable URL
   const roomUrl = typeof window !== 'undefined'
@@ -51,7 +60,7 @@ export default function InvitePrompt({ roomNumber, onContinue }) {
           <Button
             size='lg'
             variant='primary'
-            onClick={onContinue}
+            onClick={handleContinue}
             className='w-100'
           >
             Continue to Room

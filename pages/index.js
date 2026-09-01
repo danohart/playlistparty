@@ -33,6 +33,8 @@ export default function Home({
     if (router.query.room && !gameChoice) {
       const roomNum = parseInt(router.query.room);
       if (!isNaN(roomNum)) {
+        events.newFlow();
+        events.inviteLinkOpened(roomNum);
         handleRoomChange({ target: { value: roomNum } });
         setGameChoice("join");
         events.roomJoinStarted();
@@ -41,6 +43,7 @@ export default function Home({
   }, [router.query.room, gameChoice]);
 
   const handleJoinChoice = () => {
+    events.newFlow();
     events.roomJoinStarted();
     clearSession();
     setGameChoice("join");
@@ -79,6 +82,7 @@ export default function Home({
                 size='lg'
                 className='w-75'
                 onClick={() => {
+                  events.newFlow();
                   events.roomCreationStarted();
                   setGameChoice("create");
                 }}

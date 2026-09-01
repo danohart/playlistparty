@@ -35,27 +35,46 @@ export default function CreatePlaylist({ playlistSelect }) {
   async function createPlaylist(playlistInfo) {
     setLoading(true);
 
-    fetch("/api/create-playlist", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: playlistInfo.toString(),
-        description: "Playlist Shuffle",
-        public: false,
-      }),
-    })
-      .then(async (res) => {
-        if (res.ok) {
-          events.playlistCreated();
-        }
-        setMessage(
-          ResponseMessages("playlist", res.status),
-          playlistSelect({ target: { value: await res.json() } })
-        );
-      })
-      .then(setLoading(false));
+    try {
+      const res = await fetch("/api/create-playlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: playlistInfo.toString(),
+          description: "Playlist Shuffle",
+          public: false,
+        }),
+      });
+
+      const body = await res.json();
+
+      // On success the API returns the new playlist id as a bare string.
+      // Anything else (e.g. { error: "..." }) means it failed — show a
+      // message and stay on this screen instead of advancing.
+      if (res.ok && typeof body === "string" && body) {
+        events.playlistCreated();
+        setMessage(ResponseMessages("playlist", res.status));
+        playlistSelect({ target: { value: body } });
+        return;
+      }
+
+      events.playlistCreateFailed({
+        status: res.status,
+        reason: (body && body.error) || "non_string_response",
+      });
+      setMessage(
+        ResponseMessages("playlist", res.status) ||
+          (body && body.error) ||
+          "Couldn't create the playlist. Please try again."
+      );
+    } catch (err) {
+      events.playlistCreateFailed({ status: 0, reason: "network_error" });
+      setMessage("Couldn't reach the server. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

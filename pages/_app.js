@@ -3,6 +3,7 @@ import "@/styles/style.scss";
 import Layout from "@/compontents/Layout";
 import { useRouter } from "next/router";
 import OfflineNotification from "@/compontents/Offline";
+import { events } from "@/lib/analytics";
 
 export default function App({ Component, pageProps: { ...pageProps } }) {
   const router = useRouter();
@@ -55,6 +56,7 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
     if (!roomNumber) {
       const newRoom = Math.floor(Math.random() * 90000) + 10000;
       setRoomNumber(newRoom);
+      events.roomCreated(newRoom);
       // Show invite prompt for room creators instead of redirecting immediately
       if (isCreatingRoom) {
         setShowInvitePrompt(true);

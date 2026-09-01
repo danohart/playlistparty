@@ -41,6 +41,12 @@ export default function Select({
   const [messageToSend, setMessageToSend] = useState("");
   const [activeTab, setActiveTab] = useState("search");
   const sessionStartTime = useRef(Date.now());
+  const peakCountRef = useRef(0);
+  const onlineCountRef = useRef(0);
+  const roomEnteredFiredRef = useRef(false);
+  const reachedSearchTabRef = useRef(true); // "search" is the default tab
+  const performedSearchRef = useRef(false);
+  const hasExitedRef = useRef(false);
 
   useEffect(() => {
     if (!user || !roomNumber) {
@@ -60,10 +66,6 @@ export default function Select({
       }
     }
     setIsLoading(false);
-    // Track room entered when component loads
-    if (roomNumber) {
-      events.roomEntered(roomNumber, 1);
-    }
   }, [user, roomNumber]);
 
   async function setPlaylistIdForRoom(playlistId) {
@@ -109,8 +111,25 @@ export default function Select({
       );
     });
 
+    // Keep a ref copy of the online count so the Pusher callbacks (which do not
+    // re-run on re-render) can read the current value, and track the peak.
+    const setCount = (next) => {
+      const value = Math.max(0, next);
+      onlineCountRef.current = value;
+      peakCountRef.current = Math.max(peakCountRef.current, value);
+      setOnlineUsersCount(value);
+    };
+
     playlistChannel.bind("pusher:subscription_succeeded", (members) => {
-      setOnlineUsersCount(members.count);
+      setCount(members.count);
+
+      // Fire room_entered once, with the real participant count.
+      if (!roomEnteredFiredRef.current) {
+        roomEnteredFiredRef.current = true;
+        events.markRoomEntered(roomNumber);
+        events.roomEntered(roomNumber, members.count);
+      }
+
       const currentUsers = [];
       members.each((member) => {
         currentUsers.push({
@@ -122,7 +141,12 @@ export default function Select({
     });
 
     playlistChannel.bind("pusher:member_added", (member) => {
-      setOnlineUsersCount((count) => count + 1);
+      setCount(onlineCountRef.current + 1);
+      events.roomParticipantChanged(
+        roomNumber,
+        onlineCountRef.current,
+        peakCountRef.current
+      );
       setOnlineUsers((prevUsers) => [
         ...prevUsers,
         {
@@ -133,7 +157,12 @@ export default function Select({
     });
 
     playlistChannel.bind("pusher:member_removed", (member) => {
-      setOnlineUsersCount((count) => count - 1);
+      setCount(onlineCountRef.current - 1);
+      events.roomParticipantChanged(
+        roomNumber,
+        onlineCountRef.current,
+        peakCountRef.current
+      );
       setOnlineUsers((prevUsers) =>
         prevUsers.filter((user) => user.username !== member.info.username)
       );
@@ -194,19 +223,59 @@ export default function Select({
   };
 
   const handleTabChange = (tabName) => {
+    if (tabName === "search") reachedSearchTabRef.current = true;
     events.tabChanged(tabName, roomNumber);
     setActiveTab(tabName);
   };
 
-  const handleLeaveRoom = () => {
+  const buildExitPayload = (reason) => {
     const sessionDurationSec = Math.floor(
       (Date.now() - sessionStartTime.current) / 1000
     );
-    const userSongs = JSON.parse(
-      localStorage.getItem(`userSongs-${roomNumber}`) || "{}"
-    );
-    const songsAdded = userSongs[user] ? 1 : 0;
-    events.roomExited(roomNumber, sessionDurationSec, songsAdded);
+    let songsAdded = 0;
+    try {
+      const userSongs = JSON.parse(
+        localStorage.getItem(`userSongs-${roomNumber}`) || "{}"
+      );
+      songsAdded = userSongs[user] ? 1 : 0;
+    } catch (e) {
+      /* ignore */
+    }
+    return {
+      session_duration_sec: sessionDurationSec,
+      songs_added: songsAdded,
+      peak_user_count: peakCountRef.current,
+      reached_search_tab: reachedSearchTabRef.current,
+      performed_search: performedSearchRef.current,
+      reason,
+    };
+  };
+
+  const fireExit = (reason, options) => {
+    if (hasExitedRef.current || !roomNumber) return;
+    hasExitedRef.current = true;
+    events.roomExited(roomNumber, buildExitPayload(reason), options);
+  };
+
+  // Most people leave by closing the tab, not the button — capture that too.
+  useEffect(() => {
+    const onPageHide = () => fireExit("tab_close", { beacon: true });
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        fireExit("tab_close", { beacon: true });
+      }
+    };
+    window.addEventListener("pagehide", onPageHide);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", onPageHide);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomNumber, user]);
+
+  const handleLeaveRoom = () => {
+    fireExit("leave_button");
     clearSession();
     router.push("/");
   };
@@ -316,6 +385,9 @@ export default function Select({
               playlistId={playlistId}
               username={user}
               roomNumber={roomNumber}
+              onSearchPerformed={() => {
+                performedSearchRef.current = true;
+              }}
             />
           </Tab>
         </Tabs>

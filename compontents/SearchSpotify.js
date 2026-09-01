@@ -15,7 +15,12 @@ import UserSpotifyAuth from "./UserSpotifyAuth";
 import UserPlaylists from "./UserPlaylists";
 import { events } from "@/lib/analytics";
 
-export default function SearchSpotify({ playlistId, username, roomNumber }) {
+export default function SearchSpotify({
+  playlistId,
+  username,
+  roomNumber,
+  onSearchPerformed,
+}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchData, setSearchData] = useState({ items: [] });
   const [message, setMessage] = useState(null);
@@ -45,6 +50,7 @@ export default function SearchSpotify({ playlistId, username, roomNumber }) {
     await fetch(`/api/search?searchTerm=${searchTerm}`).then(async (res) => {
       const data = await res.json();
       events.songSearchPerformed(searchTerm, data.items?.length || 0);
+      if (onSearchPerformed) onSearchPerformed();
       setSearchData(data);
     });
   }

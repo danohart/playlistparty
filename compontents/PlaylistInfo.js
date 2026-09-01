@@ -7,7 +7,6 @@ export default function GetPlaylist({ playlistId }) {
     `/api/get-playlist?playlistId=${playlistId}`,
     fetcher
   );
-  if (error) return <div>failed to load</div>;
   if (isLoading)
     return (
       <Row>
@@ -16,6 +15,12 @@ export default function GetPlaylist({ playlistId }) {
         </Col>
       </Row>
     );
+
+  // The API always responds 200, even when Spotify returns an error body,
+  // so a missing `uri` is the real signal that the playlist failed to load.
+  if (error || !data || data.error || !data.uri) {
+    return <div>failed to load</div>;
+  }
 
   const convertSpotifyUri = (uri) => {
     const uriParts = uri.split(":");
