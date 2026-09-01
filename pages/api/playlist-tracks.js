@@ -33,10 +33,12 @@ export default async function handler(req, res) {
       id: track.track.id,
     }));
 
-    // Set cache headers
+    // Live data — a room's tracks change as people add songs. Keep the shared
+    // cache window tiny so it absorbs request bursts without freezing the room
+    // (the old s-maxage=86400 froze the first response for 24h).
     res.setHeader(
       "Cache-Control",
-      "public, s-maxage=86400, stale-while-revalidate=43200"
+      "public, max-age=0, s-maxage=3, stale-while-revalidate=15"
     );
 
     return res.status(200).json(tracks);
