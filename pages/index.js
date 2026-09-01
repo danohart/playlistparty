@@ -208,7 +208,16 @@ export default function Home({
       <div className='pp-home'>
         <section className='pp-hero'>
           <div className='pp-wrap'>
-            <p className='pp-eyebrow'>Playlist Party</p>
+            <p className='pp-eyebrow'>
+              <img
+                src='/favicon-512x512.png'
+                alt=''
+                width={20}
+                height={20}
+                className='pp-eyebrow-logo'
+              />
+              Playlist Party
+            </p>
             <h1 className='pp-title'>
               Whose
               <br />
