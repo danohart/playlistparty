@@ -1,23 +1,19 @@
 import { useEffect, useState } from "react";
-import { Row, Col, Button, Alert, FormControl, InputGroup } from "react-bootstrap";
+import { Button, FormControl, InputGroup } from "react-bootstrap";
 import { events } from "@/lib/analytics";
 
 export default function InvitePrompt({ roomNumber, onContinue }) {
   const [copied, setCopied] = useState(false);
 
+  // Construct the shareable URL
+  const roomUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/?room=${roomNumber}`
+      : "";
+
   useEffect(() => {
     events.invitePromptShown(roomNumber);
   }, [roomNumber]);
-
-  const handleContinue = () => {
-    events.invitePromptContinued(roomNumber);
-    onContinue();
-  };
-
-  // Construct the shareable URL
-  const roomUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/?room=${roomNumber}`
-    : '';
 
   const handleCopyLink = async () => {
     try {
@@ -26,47 +22,41 @@ export default function InvitePrompt({ roomNumber, onContinue }) {
       events.inviteLinkCopied(roomNumber);
       setTimeout(() => setCopied(false), 3000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
     }
   };
 
+  const handleContinue = () => {
+    events.invitePromptContinued(roomNumber);
+    onContinue();
+  };
+
   return (
-    <Row className='mt-4'>
-      <Col xs={12} lg={{ span: 8, offset: 2 }}>
-        <Alert variant='success' className='text-center'>
-          <h3>Room Created! 🎉</h3>
-          <p className='mb-3'>
-            Your room is ready. Share this link with friends so they can join and add songs:
-          </p>
+    <>
+      <p className="flow-intro">
+        Your room is live. Read this code out to the room, or send the link —
+        everyone adds songs in secret.
+      </p>
 
-          <InputGroup className='mb-3'>
-            <FormControl
-              value={roomUrl}
-              readOnly
-              className='text-center'
-            />
-            <Button
-              variant='outline-secondary'
-              onClick={handleCopyLink}
-            >
-              {copied ? '✓ Copied!' : 'Copy Link'}
-            </Button>
-          </InputGroup>
+      <div className="flow-code-display" aria-label={`Room code ${roomNumber}`}>
+        {roomNumber}
+      </div>
 
-          <p className='text-muted small mb-3'>
-            Room #{roomNumber}
-          </p>
+      <InputGroup>
+        <FormControl value={roomUrl} readOnly aria-label="Room link" />
+        <Button variant="outline-light" onClick={handleCopyLink}>
+          {copied ? "Copied" : "Copy link"}
+        </Button>
+      </InputGroup>
 
-          <Button
-            size='lg'
-            variant='primary'
-            onClick={handleContinue}
-            className='w-100'
-          >
-            Continue to Room
-          </Button>
-        </Alert>
-      </Col>
-    </Row>
+      <Button
+        variant="primary"
+        size="lg"
+        className="w-100"
+        onClick={handleContinue}
+      >
+        Continue to room
+      </Button>
+    </>
   );
 }

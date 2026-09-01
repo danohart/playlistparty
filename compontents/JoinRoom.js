@@ -1,20 +1,14 @@
-import { Row, Col, FormControl } from "react-bootstrap";
+import CodeInput from "@/compontents/CodeInput";
 
 export default function JoinRoom({ handleRoomChange, roomNumber }) {
   return (
-    <>
-      <Row className='mt-2'>
-        <Col>
-          <h4>Room Code</h4>
-          <FormControl
-            type='number'
-            maxLength={5}
-            placeholder={"Five digit code"}
-            onChange={handleRoomChange}
-            value={roomNumber || ''}
-          />
-        </Col>
-      </Row>
-    </>
+    <div>
+      <label className="flow-field-label">Room code</label>
+      <CodeInput
+        value={roomNumber ? String(roomNumber) : ""}
+        onChange={(v) => handleRoomChange({ target: { value: v } })}
+        length={5}
+      />
+    </div>
   );
 }

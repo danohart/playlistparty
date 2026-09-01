@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Col, Button, FormControl, Alert } from "react-bootstrap";
+import { Button, FormControl, Alert } from "react-bootstrap";
 import { events } from "@/lib/analytics";
 
 export default function SetUsername({
@@ -63,38 +63,36 @@ export default function SetUsername({
   };
 
   return (
-    <Row className='mt-2'>
-      <Col>
-        <h4>Pick a name</h4>
-        <FormControl
-          type='text'
-          className='mt-2'
-          onChange={(e) => setUsername(e.target.value)}
-          value={username}
-          placeholder='Your name'
-          maxLength={10}
-          required
-        />
+    <>
+      <FormControl
+        size="lg"
+        type="text"
+        onChange={(e) => setUsername(e.target.value)}
+        value={username}
+        placeholder="Your name"
+        maxLength={10}
+        required
+      />
 
-        {error && (
-          <Alert variant='danger' className='mt-2'>
-            {error}
-          </Alert>
-        )}
+      {error && (
+        <Alert variant="danger" className="mb-0">
+          {error}
+        </Alert>
+      )}
 
-        <Button
-          className='mt-2'
-          size='lg'
-          onClick={handleSubmit}
-          disabled={isChecking || !username.trim()}
-        >
-          {isChecking
-            ? "Checking..."
-            : createRoom
-            ? "Create Room"
-            : "Join Room"}
-        </Button>
-      </Col>
-    </Row>
+      <Button
+        variant="primary"
+        size="lg"
+        className="w-100"
+        onClick={handleSubmit}
+        disabled={isChecking || !username.trim()}
+      >
+        {isChecking
+          ? "Checking…"
+          : createRoom
+          ? "Create room"
+          : "Join room"}
+      </Button>
+    </>
   );
 }

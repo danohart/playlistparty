@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Row, Col, Button, FormControl, Spinner } from "react-bootstrap";
+import { Button, FormControl, Spinner } from "react-bootstrap";
+import { Shuffle } from "react-bootstrap-icons";
 import {
   uniqueNamesGenerator,
   adjectives,
@@ -8,7 +9,9 @@ import {
 import ResponseMessages from "@/compontents/ResponseMessages";
 import { events } from "@/lib/analytics";
 
-export default function CreatePlaylist({ playlistSelect }) {
+const TAKEN_LATELY = ["Basement 2am", "Dad's car radio", "Sunday roast"];
+
+export default function CreatePlaylist({ playlistSelect, onBack }) {
   const [playlistName, setPlaylistName] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,10 +29,7 @@ export default function CreatePlaylist({ playlistSelect }) {
   }
 
   function handleChange(e) {
-    e.preventDefault;
-    const formData = e.target.value;
-
-    setPlaylistName(formData);
+    setPlaylistName(e.target.value);
   }
 
   async function createPlaylist(playlistInfo) {
@@ -79,65 +79,76 @@ export default function CreatePlaylist({ playlistSelect }) {
 
   return (
     <>
-      {loading ? (
-        <Spinner animation='border' role='status'>
-          <span className='visually-hidden'>Loading...</span>
-        </Spinner>
-      ) : (
-        <>
-          <h2>Create a new playlist</h2>
-          <Row>
-            <Col className='mb-3'>
-              To start, create a playlist first. If you&apos;re just joining an
-              already existing playlist, click &quot;Back&quot; above.
-            </Col>
-          </Row>
-          <Row>
-            <Col xs={12} sm={12} md={12} lg={12}>
-              <FormControl
-                name='playlist-field'
-                placeholder='Name your new playlist'
-                value={playlistName}
-                onChange={handleChange}
-                className='playlist-field'
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <Button
-                disabled={
-                  playlistName === "" || message === "Playlist created!"
-                }
-                onClick={() => createPlaylist(playlistName)}
-                size='md'
-                className='mt-2'
-              >
-                {!loading ? (
-                  "Create playlist"
-                ) : (
-                  <Spinner animation='border' role='status'>
-                    <span className='visually-hidden'>Loading...</span>
-                  </Spinner>
-                )}
-              </Button>
-              <Button
-                className='ms-2 mt-2'
-                size='md'
-                variant='secondary'
-                onClick={() => uniquePlaylistName()}
-              >
-                Make up a name
-              </Button>
-            </Col>
-          </Row>
-          {message ? (
-            <Row>
-              <Col>{message}</Col>
-            </Row>
-          ) : null}
-        </>
-      )}
+      <p className="flow-intro">
+        This is what your friends see when they punch in the code.{" "}
+        {onBack ? (
+          <a
+            href="#back"
+            onClick={(e) => {
+              e.preventDefault();
+              onBack();
+            }}
+          >
+            Joining someone else&apos;s? Go back.
+          </a>
+        ) : (
+          "Joining someone else's? Use Back above."
+        )}
+      </p>
+
+      <FormControl
+        size="lg"
+        name="playlist-field"
+        placeholder="FRIDAY NIGHT, KITCHEN FLOOR"
+        value={playlistName}
+        onChange={handleChange}
+        maxLength={40}
+        disabled={loading}
+      />
+
+      <Button
+        variant="primary"
+        size="lg"
+        className="w-100"
+        disabled={loading || playlistName.trim() === ""}
+        onClick={() => createPlaylist(playlistName)}
+      >
+        {loading ? (
+          <Spinner animation="border" size="sm" role="status">
+            <span className="visually-hidden">Creating…</span>
+          </Spinner>
+        ) : (
+          "Create playlist"
+        )}
+      </Button>
+
+      <Button
+        variant="outline-light"
+        className="flow-secondary"
+        onClick={uniquePlaylistName}
+        disabled={loading}
+      >
+        <Shuffle aria-hidden="true" />
+        Make up a name
+      </Button>
+
+      {message ? <p className="flow-note">{message}</p> : null}
+
+      <div className="pp-taken">
+        <p className="pp-taken-label">Taken lately</p>
+        <div className="pp-chips">
+          {TAKEN_LATELY.map((name) => (
+            <button
+              type="button"
+              key={name}
+              className="pp-chip"
+              onClick={() => setPlaylistName(name)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      </div>
     </>
   );
 }

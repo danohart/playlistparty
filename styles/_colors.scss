@@ -28,3 +28,13 @@ $all-colors: (
     $sunset-orange,
     $sunny-yellow
 );
+
+// --- Design-handoff additions (2a) -------------------------------------------
+// Surfaces + hairlines used by the homepage and the create/join flow shell.
+$surface:       #00382E; // page background, a touch lighter than $background
+$border-subtle: rgba($text-light, .14);
+$border-input:  rgba($text-light, .22);
+$fill-subtle:   rgba($text-light, .06);
+$text-muted:    rgba($text-light, .65);
+$text-faint:    rgba($text-light, .45);
+$radius-pill:   30px;

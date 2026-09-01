@@ -1,13 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { Row, Col, Button } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import Meta from "@/compontents/Meta";
-import { siteTitle } from "@/lib/constants";
+import FlowLayout from "@/compontents/FlowLayout";
+import CodeInput from "@/compontents/CodeInput";
 import CreatePlaylist from "@/compontents/CreatePlaylist";
 import JoinRoom from "@/compontents/JoinRoom";
 import SetUsername from "@/compontents/SetUsername";
 import InvitePrompt from "@/compontents/InvitePrompt";
 import { events } from "@/lib/analytics";
+
+const ROOM_CODE_LENGTH = 5;
+
+const HOW_IT_PLAYS = [
+  {
+    title: "Add in secret",
+    body: "Submit your tracks. Nobody sees who added what.",
+  },
+  {
+    title: "Play it out loud",
+    body: "One speaker, one room, one shuffled playlist.",
+  },
+  {
+    title: "Guess out loud",
+    body: "Take turns. Get it right, take a point. Get it wrong, learn something.",
+    accent: true,
+  },
+];
 
 export default function Home({
   handleLogin,
@@ -23,6 +42,9 @@ export default function Home({
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [gameChoice, setGameChoice] = useState(null);
+  const [code, setCode] = useState("");
+  const [joinError, setJoinError] = useState(null);
+  const [isJoining, setIsJoining] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -36,164 +58,245 @@ export default function Home({
         events.newFlow();
         events.inviteLinkOpened(roomNum);
         handleRoomChange({ target: { value: roomNum } });
+        setCode(String(roomNum));
         setGameChoice("join");
         events.roomJoinStarted();
       }
     }
   }, [router.query.room, gameChoice]);
 
-  const handleJoinChoice = () => {
+  const startParty = () => {
     events.newFlow();
-    events.roomJoinStarted();
-    clearSession();
-    setGameChoice("join");
+    events.roomCreationStarted();
+    setGameChoice("create");
   };
 
-  return (
-    <>
-      <Meta description='PlaylistParty is a social music challenge where you can test your knowledge and share your favorite tunes with friends.' />
-      <h1 className='logo'>{siteTitle}</h1>
-      <Row>
-        <Col xs={12} lg={{ span: 8, offset: 2 }} className='mb-4 text-center'>
-          Build the perfect playlist together. Create a room, drop in your
-          favorite tracks, chat about music, and discover new songs through
-          friends. Your collaborative soundtrack starts here.
-        </Col>
-      </Row>
-      {!isClient ? (
-        // Show buttons but disable them until client-side code is ready
-        <Row className='my-4'>
-          <Col xs={12} md={6} className='text-center mb-3'>
-            <Button size='lg' className='w-75' disabled>
-              Create New Room
-            </Button>
-          </Col>
-          <Col xs={12} md={6} className='text-center mb-3'>
-            <Button size='lg' variant='primary' className='w-75' disabled>
-              Join Existing Room
-            </Button>
-          </Col>
-        </Row>
-      ) : !gameChoice ? (
-        <>
-          <Row className='my-4'>
-            <Col xs={12} md={6} className='text-center mb-3'>
-              <Button
-                size='lg'
-                className='w-75'
-                onClick={() => {
-                  events.newFlow();
-                  events.roomCreationStarted();
-                  setGameChoice("create");
-                }}
-              >
-                Create New Room
-              </Button>
-            </Col>
-            <Col xs={12} md={6} className='text-center mb-3'>
-              <Button
-                size='lg'
-                variant='primary'
-                className='w-75'
-                onClick={handleJoinChoice}
-              >
-                Join Existing Room
-              </Button>
-            </Col>
-          </Row>
-          <Row>
-            <Col
-              xs={12}
-              lg={{ span: 8, offset: 2 }}
-              className='mb-4 text-center'
-            >
-              <Row className='g-4'>
-                <Col xs={12} md={4}>
-                  <div className='feature-card'>
-                    <h3>Create Together</h3>
-                    <p>
-                      Start a room, invite friends, and build playlists in
-                      real-time. Add your favorite tracks and see what others
-                      are contributing.
-                    </p>
-                  </div>
-                </Col>
+  const handleJoinSubmit = async () => {
+    if (code.length !== ROOM_CODE_LENGTH || isJoining) return;
+    setJoinError(null);
+    setIsJoining(true);
+    try {
+      const res = await fetch(`/api/pusher/check-room?roomNumber=${code}`);
+      const data = await res.json();
+      if (data.error || !data.exists) {
+        setJoinError("No party with that code.");
+        return;
+      }
+      events.newFlow();
+      events.roomJoinStarted();
+      handleRoomChange({ target: { value: code } });
+      setGameChoice("join");
+    } catch (err) {
+      setJoinError("Couldn't check that code. Try again.");
+    } finally {
+      setIsJoining(false);
+    }
+  };
 
-                <Col xs={12} md={4}>
-                  <div className='feature-card'>
-                    <h3>Share Stories</h3>
-                    <p>
-                      Every song has a story. Add notes to your picks, share
-                      memories, or tell others why this track means something
-                      special.
-                    </p>
-                  </div>
-                </Col>
+  const backToHome = () => {
+    clearSession();
+    setGameChoice(null);
+    setCode("");
+    setJoinError(null);
+  };
 
-                <Col xs={12} md={4}>
-                  <div className='feature-card'>
-                    <h3>Connect Through Music</h3>
-                    <p>
-                      Chat with friends, react to song choices, and discover new
-                      music through people you trust. Perfect for parties, road
-                      trips, or daily listening.
-                    </p>
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </>
-      ) : gameChoice === "create" ? (
+  // --- Create / join flow -------------------------------------------------
+  if (isClient && gameChoice === "create") {
+    if (!spotifyPlaylist) {
+      return (
         <>
-          {!spotifyPlaylist ? (
-            <>
-              <Button
-                variant='primary'
-                className='mb-3'
-                onClick={() => setGameChoice(null)}
-              >
-                ← Back
-              </Button>
-              <CreatePlaylist playlistSelect={handlePlaylistChange} />
-            </>
-          ) : showInvitePrompt ? (
-            <InvitePrompt roomNumber={room} onContinue={continueToRoom} />
-          ) : (
-            <>
-              <h2>Playlist created!</h2>
-              <SetUsername
-                handleLoginChange={handleLoginChange}
-                handleLogin={handleLogin}
-                createRoom
-              />
-            </>
-          )}
-        </>
-      ) : (
-        <>
-          <Button
-            variant='primary'
-            className='mb-3'
-            onClick={() => {
-              clearSession();
-              setGameChoice(null);
-            }}
+          <Meta description='Start a Playlist Party — name your party and build a playlist in secret with the room.' />
+          <FlowLayout
+            step={1}
+            onBack={() => setGameChoice(null)}
+            heading={
+              <>
+                Name your
+                <br />
+                party
+              </>
+            }
           >
-            ← Back
-          </Button>
-          <h2>Join a room</h2>
+            <CreatePlaylist
+              playlistSelect={handlePlaylistChange}
+              onBack={() => setGameChoice(null)}
+            />
+          </FlowLayout>
+        </>
+      );
+    }
+
+    if (showInvitePrompt) {
+      return (
+        <>
+          <Meta />
+          <FlowLayout
+            step={3}
+            heading={
+              <>
+                Share the
+                <br />
+                code
+              </>
+            }
+          >
+            <InvitePrompt roomNumber={room} onContinue={continueToRoom} />
+          </FlowLayout>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Meta />
+        <FlowLayout
+          step={2}
+          heading={
+            <>
+              Pick a
+              <br />
+              name
+            </>
+          }
+        >
+          <p className='flow-intro'>
+            Playlist created. This name is just what shows up next to your
+            messages in the room.
+          </p>
+          <SetUsername
+            handleLoginChange={handleLoginChange}
+            handleLogin={handleLogin}
+            createRoom
+          />
+        </FlowLayout>
+      </>
+    );
+  }
+
+  if (isClient && gameChoice === "join") {
+    return (
+      <>
+        <Meta description='Join a Playlist Party with the code your host read out.' />
+        <FlowLayout
+          onBack={backToHome}
+          heading={
+            <>
+              Join the
+              <br />
+              party
+            </>
+          }
+        >
+          <p className='flow-intro'>
+            Punch in the code your host read out, then pick the name the room
+            sees.
+          </p>
           <JoinRoom handleRoomChange={handleRoomChange} roomNumber={room} />
           <SetUsername
             handleLoginChange={handleLoginChange}
             handleLogin={handleLogin}
             roomNumber={room}
           />
-        </>
-      )}
+        </FlowLayout>
+      </>
+    );
+  }
+
+  // --- Homepage (design 2a) --------------------------------------------------
+  return (
+    <>
+      <Meta description='PlaylistParty is a social music challenge where you can test your knowledge and share your favorite tunes with friends.' />
+      <div className='pp-home'>
+        <section className='pp-hero'>
+          <div className='pp-wrap'>
+            <p className='pp-eyebrow'>Playlist Party</p>
+            <h1 className='pp-title'>
+              Whose
+              <br />
+              song
+              <br />
+              is this?
+            </h1>
+            <p className='pp-subhead'>
+              A playlist built in secret by everyone in the room. Press play and
+              start accusing.
+            </p>
+          </div>
+        </section>
+
+        <section className='pp-section pp-actions'>
+          <div className='pp-wrap'>
+            <Button
+              variant='primary'
+              size='lg'
+              className='w-100'
+              disabled={!isClient}
+              onClick={startParty}
+            >
+              Start a party
+            </Button>
+
+            <div className='pp-divider'>
+              <span>Or join one</span>
+              <hr />
+            </div>
+
+            <div>
+              <div className='pp-code-row'>
+                <CodeInput
+                  value={code}
+                  onChange={(v) => {
+                    setCode(v);
+                    if (joinError) setJoinError(null);
+                  }}
+                  onSubmit={handleJoinSubmit}
+                  length={ROOM_CODE_LENGTH}
+                  invalid={!!joinError}
+                  disabled={!isClient || isJoining}
+                />
+                <Button
+                  variant='outline-light'
+                  onClick={handleJoinSubmit}
+                  disabled={
+                    !isClient || isJoining || code.length !== ROOM_CODE_LENGTH
+                  }
+                >
+                  {isJoining ? "…" : "Join"}
+                </Button>
+              </div>
+              {joinError && (
+                <p className='pp-code-error' role='alert'>
+                  {joinError}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className='pp-section pp-section--tight pp-how'>
+          <div className='pp-wrap'>
+            {HOW_IT_PLAYS.map((card, i) => (
+              <div
+                key={card.title}
+                className={`pp-how-card${
+                  card.accent ? " pp-how-card--accent" : ""
+                }`}
+              >
+                <span className='pp-how-num'>{i + 1}</span>
+                <div>
+                  <p className='pp-how-title'>{card.title}</p>
+                  <p className='pp-how-body'>{card.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
     </>
   );
 }
+
+Home.fullBleed = true;
 
 export async function getStaticProps() {
   return {

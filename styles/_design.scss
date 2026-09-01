@@ -1,0 +1,407 @@
+// ===========================================================================
+// Design handoff 2a — homepage + create/join flow shell.
+//
+// What we take from the handoff: layout composition, colour regions, copy,
+// content hierarchy, the poster-weight headlines and the "how it plays" cards.
+// What we keep from the current app: the system font stack, rounded corners
+// ($border-radius), the existing button styling, and Bootstrap component
+// sizing (btn-lg / form-control-lg) instead of fixed pixel heights.
+// ===========================================================================
+
+$flow-max: 560px; // content column cap above 640px
+$gutter: 24px;
+
+// --- Full-bleed page wrapper (replaces the <Container><main> card) ----------
+.full-bleed {
+  width: 100%;
+  min-height: 100vh;
+  background: $surface;
+}
+
+// Every region is a nested flex/grid; a hard stop keeps a long child (the code
+// row) from ever pushing the page sideways on a narrow screen.
+.pp-home,
+.flow-screen {
+  overflow-x: hidden;
+}
+
+// --- Shared pieces ---------------------------------------------------------
+.pp-wrap {
+  width: 100%;
+  max-width: min(100%, #{$flow-max});
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.pp-eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+}
+
+// Poster headline — Archivo Black in the mock; here it's the system stack at
+// heavy weight, which still reads as a bold display type.
+%poster {
+  margin: 0;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: .92;
+  letter-spacing: -0.02em;
+}
+
+// --- Homepage ------------------------------------------------------------------
+.pp-home {
+  display: flex;
+  flex-direction: column;
+}
+
+.pp-hero {
+  background: $accent;
+  color: $text-dark;
+  padding: calc(env(safe-area-inset-top, 0px) + 46px) $gutter 26px;
+
+  .pp-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .pp-title {
+    @extend %poster;
+    color: $text-dark;
+    font-size: clamp(2.75rem, 12vw, 3.25rem); // 44 -> 52
+  }
+
+  .pp-subhead {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.45;
+    max-width: 20em;
+  }
+}
+
+.pp-section {
+  padding: 24px $gutter;
+  min-width: 0;
+
+  &.pp-section--tight {
+    padding-top: 4px;
+    padding-bottom: 34px;
+  }
+}
+
+.pp-actions .pp-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.pp-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  span {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: $text-faint;
+  }
+
+  hr {
+    flex: 1;
+    margin: 0;
+    border: 0;
+    border-top: 1px solid $border-subtle;
+    opacity: 1;
+  }
+}
+
+.pp-code-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  min-width: 0;
+
+  > * { min-width: 0; }
+}
+
+// --- Boxed code input (CodeInput.js) --------------------------------------
+.pp-code {
+  display: flex;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+
+  &.is-invalid {
+    animation: pp-shake 300ms ease;
+  }
+
+  .form-control {
+    // lean on form-control-lg for the size; only the look is customised.
+    // width:0 + flex lets the five boxes share the row instead of each
+    // claiming an <input>'s intrinsic width and blowing the row out.
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    padding-inline: 0;
+    text-align: center;
+    font-weight: 700;
+    font-size: 22px;
+    color: $primary;
+    background: rgba($text-light, .08);
+    border: 2px solid rgba($text-light, .18);
+
+    &::placeholder { color: transparent; }
+
+    &:focus {
+      background: rgba($text-light, .08);
+      border-color: $primary;
+      box-shadow: none;
+      color: $primary;
+    }
+  }
+}
+
+.pp-code-error {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: $danger;
+}
+
+@keyframes pp-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-code.is-invalid { animation: none; }
+}
+
+// --- "How it plays" cards ------------------------------------------------
+.pp-how .pp-wrap {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pp-how-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 15px 16px;
+  border: 2px solid $border-subtle;
+  border-radius: $border-radius;
+
+  > div { min-width: 0; }
+
+  &--accent {
+    border-color: $primary;
+    background: rgba($primary, .08);
+
+    .pp-how-num { color: $primary; }
+    .pp-how-body { color: rgba($text-light, .75); }
+  }
+}
+
+.pp-how-num {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: .9;
+  color: $accent;
+}
+
+.pp-how-title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+
+.pp-how-body {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.45;
+  color: $text-muted;
+}
+
+// --- Flow shell (FlowLayout.js): orange header + dark body --------------
+.flow-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: $surface;
+}
+
+.flow-header {
+  background: $accent;
+  color: $text-dark;
+  padding: calc(env(safe-area-inset-top, 0px) + 46px) $gutter 22px;
+
+  .pp-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+
+.flow-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+// Back button — Bootstrap outline-dark, sized by Bootstrap (btn-sm)
+.flow-back.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 12px;
+}
+
+.flow-steps {
+  display: flex;
+  gap: 5px;
+
+  span {
+    width: 26px;
+    height: 5px;
+    background: rgba($text-dark, .25);
+    border-radius: 2px;
+
+    &.is-on { background: $text-dark; }
+  }
+}
+
+.flow-heading {
+  @extend %poster;
+  color: $text-dark;
+  font-size: clamp(2rem, 9vw, 2.5rem); // 32 -> 40
+}
+
+.flow-body {
+  flex: 1;
+  padding: 26px $gutter 40px;
+
+  .pp-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+}
+
+// --- Form controls on the dark body -------------------------------------
+.flow-body .form-control,
+.pp-actions .form-control {
+  background: $fill-subtle;
+  border: 2px solid $border-input;
+  color: $text-light;
+
+  &::placeholder { color: rgba($text-light, .45); }
+
+  &:focus {
+    background: rgba($text-light, .1);
+    border-color: $primary;
+    box-shadow: 0 0 0 0.2rem rgba($primary, .25);
+    color: $text-light;
+  }
+}
+
+.flow-intro {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: rgba($text-light, .72);
+
+  a {
+    color: $primary;
+    &:hover { color: $text-light; }
+  }
+}
+
+.flow-note {
+  margin: 0;
+  font-size: 14px;
+  color: $text-muted;
+}
+
+.flow-field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: $text-faint;
+}
+
+// Secondary button with a leading icon (Make up a name)
+.flow-secondary.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 14px;
+}
+
+// --- "Taken lately" chips ----------------------------------------------
+.pp-taken {
+  margin-top: 6px;
+  padding-top: 18px;
+  border-top: 2px solid rgba($text-light, .12);
+}
+
+.pp-taken-label {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: $accent;
+}
+
+.pp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pp-chip {
+  padding: 7px 13px;
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba($text-light, .7);
+  background: transparent;
+  border: 1px solid rgba($text-light, .2);
+  border-radius: $radius-pill;
+  cursor: pointer;
+
+  &:hover { color: $text-light; border-color: rgba($text-light, .4); }
+}
+
+// --- Invite / share step ---------------------------------------------------
+.flow-code-display {
+  padding: 18px;
+  text-align: center;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: $primary;
+  background: rgba($text-light, .06);
+  border: 2px solid $border-input;
+  border-radius: $border-radius;
+}

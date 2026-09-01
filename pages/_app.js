@@ -101,7 +101,7 @@ export default function App({ Component, pageProps: { ...pageProps } }) {
   };
 
   return (
-    <Layout>
+    <Layout fullBleed={Component.fullBleed}>
       <OfflineNotification />
       <Component
         username={username}
