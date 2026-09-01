@@ -24,7 +24,6 @@ const HOW_IT_PLAYS = [
   {
     title: "Guess out loud",
     body: "Take turns. Get it right, take a point. Get it wrong, learn something.",
-    accent: true,
   },
 ];
 
